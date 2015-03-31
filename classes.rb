@@ -5,7 +5,7 @@ require 'time'
 require 'sequel'
 require 'nacl'
 require 'securerandom'
-require 'uri'
+require 'sqlite3'
 
 class Logger
   include Cinch::Plugin
@@ -70,17 +70,12 @@ class DatabaseBox
     @database_path = database_url
 
     if !File.exist?(File.basename(database_url))
-      setup_database
+      setup_message_database
     end
 
     @DB = Sequel.connect(@database_path)
     @messages_ds = @DB[:messages]  # data set creation
 
-  end
-
-  def write_values_to_database(values)
-    foo = values.collect{|key,val| {:key => val}}
-    @messages_ds.insert *foo
   end
 
   def write_message_to_database(timestamp, client, private, sender, message, attachment)
@@ -97,7 +92,7 @@ class DatabaseBox
   end
 
   private
-  def setup_database
+  def setup_message_database
     puts 'setting up db...'
     @DB = Sequel.sqlite
     @DB = Sequel.connect(@database_path)
@@ -146,8 +141,6 @@ class CryptoBox
 end
 
 database = DatabaseBox.new('sqlite://test.db')
-# database.write_message_to_database(Time.new, 'haze', true, 'meschi', 'fuck the children', '')
-# hash erstellen mit allen attributen, durchcyclen
 
 values = {}
 values['time'] = Time.now
