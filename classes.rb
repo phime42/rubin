@@ -67,7 +67,6 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
 
   def initialize(database_url)
     # check if database was used before, otherwise generate what we need
-    puts 'init started'
     @DB
     @messages_ds
     @keys_ds
@@ -99,17 +98,40 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
   def register_key (description, host, private_key, public_key)  # todo: check whether it's a real key or not
     # write key to key database and register it as a new column in the messages database
     @keys_ds.insert(:description => description, :host => host, :private_key => private_key, :public_key => public_key, :revoked => false)
-
     if !private_key.empty?  # todo: check whether the key is already a column in the message table
       add_new_messages_column(public_key)
     end
+  end
+
+  def revoke_key(public_key)
+    # checks whether the respective to be revoked key is already a column in the messages and deletes it
+    if check_for_column(:messages, public_key)
+      delete_messages_column(public_key)
+    end
+  end
+
+
+  private
+
+  def check_for_column(table, column)
+    found = false  # strangely enough it does only work when it's declared here
+    @DB.schema(table).each do |element|
+      if "#{element[0]}".eql? "#{column}"  # it's an error... should be handled some day
+        found = true
+      end
+    end
+    if !found  # checks whether the key was found in a database column and returns with an error
+      return false
+    else
+      return true
+    end
+
   end
 
   def hash_key(public_key)
     Base64.encode64(Digest::SHA256.digest public_key)
   end
 
-  private
   def setup_message_database
     puts 'setting up db...'
     @DB = Sequel.sqlite
@@ -149,8 +171,10 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
     end
   end
 
-  def delete_messages_column(public_key)
-
+  def delete_messages_column(column_title)
+    @DB.alter_table :messages do
+      drop_column column_title
+    end
   end
 end
 
@@ -180,8 +204,9 @@ class CryptoBox
 end
 
 db = DatabaseBox.new('sqlite://test.db')
-db.write_message_to_database(Time.now, 'email', false, 'me', 'Hurz', nil)
-db.read_messages_from_database
+# db.write_message_to_database(Time.now, 'email', false, 'me', 'Hurz', nil)
+# db.read_messages_from_database
 #db.write_
 
-db.register_key('blah', 'host', 'private key', 'public key')
+# db.register_key('blah', 'host', 'private key', 'public key')
+puts db.revoke_key('client')  # returns true
