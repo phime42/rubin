@@ -71,21 +71,26 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
 
     if !File.exist?(File.basename(database_url))
       setup_message_database
+      setup_key_database
     end
 
     @DB = Sequel.connect(@database_path)
-    @messages_ds = @DB[:messages]  # data set creation
+    @messages_ds = @DB[:messages]  # create dataset for messages
+    @keys_ds = @DB[:keys]  # create dataset for keys
 
   end
 
   def write_message_to_database(timestamp, client, private, sender, message, attachment)
     # write the message from the client application to the database
     @messages_ds.insert(:time => timestamp, :client => client, :private => private, :sender => sender, :message => message, :attachment => attachment)
-
   end
 
-  def read_from_database
+  def read_messages_from_database
     # read a message from database
+  end
+
+  def write_keys_to_database (description, host, private_key, public_key)
+    @keys_ds.insert(:description => description, :host => host, :private_key => private_key, :public_key => public_key)
   end
 
   private
@@ -144,6 +149,3 @@ class CryptoBox
   end
 
 end
-
-database = DatabaseBox.new('sqlite://test.db')
-database.write_message_to_database(Time.now, 'email', false, 'Nico', 'Hello world!', nil)
