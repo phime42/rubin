@@ -79,11 +79,8 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
   end
 
   def write_message_to_database(timestamp, client, private, sender, message, attachment)
-    # time_epoch = timestamp.to_i  # todo: change to float
     # write the message from the client application to the database
     @messages_ds.insert(:time => timestamp, :client => client, :private => private, :sender => sender, :message => message, :attachment => attachment)
-    puts "testing: #{timestamp}, #{client}, PM: #{private}, #{sender}, #{message}"
-
 
   end
 
