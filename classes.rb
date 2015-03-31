@@ -115,7 +115,7 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
   def check_for_column(table, column)
     found = false  # strangely enough it does only work when it's declared here
     @DB.schema(table).each do |element|
-      if "#{element[0]}".eql? "#{column}"  # it's an error... should be handled some day
+      if "#{element[0]}".eql? "#{column}"  # does only work when it's converted to a string, even when input is already a string
         found = true
       end
     end
