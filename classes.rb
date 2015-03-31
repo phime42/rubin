@@ -154,4 +154,4 @@ class CryptoBox
 end
 
 database = DatabaseBox.new('sqlite://test.db')
-database.write_message_to_database(Time.now, 'email', false, 'Nico', 'Hello you bastard', nil)
+database.write_message_to_database(Time.now, 'email', false, 'Nico', 'Hello world!', nil)
