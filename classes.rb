@@ -134,11 +134,6 @@ class CryptoBox
 
   def generate_keypair
     @public_key, @private_key = NaCl.crypto_box_keypair
-    #[public_key, private_key]
-    # keypair = Hash.new
-    # keypair['private'] = private_key
-    # keypair['public'] = public_key
-    # keypair
   end
 
   def encrypt_sting(string_to_encrypt, receiver_key)
