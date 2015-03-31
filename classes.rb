@@ -58,7 +58,7 @@ class RelayChat
   end
 end
 
-class DatabaseBox
+class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for databases
   attr_reader :messages_ds  # make dataset readable
   attr_accessor :database_path
 
@@ -108,6 +108,19 @@ class DatabaseBox
     @messages_ds = @DB[:message]  # dataset creation
     @DB.disconnect
   end
+
+  def setup_key_database
+    puts 'setting up key database'
+    @DB = Sequel.sqlite
+    @DB = Sequel.connect(@database_path)
+    @DB.create_table :keys do
+      primary_key :id  # id
+      String :description  # description of the respective key
+      String :host  # contains url / whatever of the host
+      String :private_key  # only contains a value if it's a local private key, otherwise nil
+      String :public_key  # contains public key of respectiv host
+    end
+  end
 end
 
 class CryptoBox
@@ -141,12 +154,4 @@ class CryptoBox
 end
 
 database = DatabaseBox.new('sqlite://test.db')
-
-values = {}
-values['time'] = Time.now
-values['client'] = 'haze'
-values['sender'] = 'fuck'
-values['private'] = true
-values['message'] = 'lolwhut'
-values['attachment'] = nil
-database.write_values_to_database(values)
+database.write_message_to_database(Time.now, 'email', false, 'Nico', 'Hello you bastard', nil)
