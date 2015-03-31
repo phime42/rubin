@@ -9,6 +9,7 @@ require 'sqlite3'
 require 'digest'
 require 'base64'
 
+$dbpath = "sqlite://test.db"
 
 class Logger
   include Cinch::Plugin
@@ -29,8 +30,8 @@ class Logger
  
   # registers a public message on the channel
   def register_public_message(message)
-    db = Database.new
-    db.write_to_database(Time.new, 'client', false, message.user.name, message.message)
+    db = DatabaseBox.new($dbpath)
+    db.write_message_to_database(Time.new, 'client', false, message.user.name, message.message)
   end
 
   def register_private_message(message)
@@ -63,21 +64,19 @@ end
 
 class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for databases
   attr_reader :messages_ds  # make dataset readable
-  attr_accessor :database_path
 
-  def initialize(database_url)
+  def initialize
     # check if database was used before, otherwise generate what we need
     @DB
     @messages_ds
     @keys_ds
-    @database_path = database_url
 
-    if !File.exist?(File.basename(database_url))
+    if !File.exist?(File.basename($dbpath))
       setup_message_database
       setup_key_database
     end
 
-    @DB = Sequel.connect(@database_path)
+    @DB = Sequel.connect($dbpath)
     @messages_ds = @DB[:messages]  # create dataset for messages
     @keys_ds = @DB[:keys]  # create dataset for keys
 
@@ -135,7 +134,7 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
   def setup_message_database
     puts 'setting up db...'
     @DB = Sequel.sqlite
-    @DB = Sequel.connect(@database_path)
+    @DB = Sequel.connect($dbpath)
     @DB.create_table? :messages do
       primary_key :id  # wtf
       Datetime :time  # time when the message was received
@@ -152,7 +151,7 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
   def setup_key_database
     puts 'setting up key database'
     @DB = Sequel.sqlite
-    @DB = Sequel.connect(@database_path)
+    @DB = Sequel.connect($dbpath)
     @DB.create_table? :keys do
       primary_key :id  # id
       String :description  # description of the respective key
@@ -203,10 +202,9 @@ class CryptoBox
 
 end
 
-db = DatabaseBox.new('sqlite://test.db')
-# db.write_message_to_database(Time.now, 'email', false, 'me', 'Hurz', nil)
+db = DatabaseBox.new
+db.write_message_to_database(Time.now, 'email', false, 'me', 'Hurz', nil)
 # db.read_messages_from_database
 #db.write_
 
 # db.register_key('blah', 'host', 'private key', 'public key')
-puts db.revoke_key('client')  # returns true
