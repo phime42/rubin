@@ -110,10 +110,22 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
     end
   end
 
+  def output_host_keypair
+    # outputs the server's public !!!and private!!! keypair,
+    # so proceed with caution.
+
+
+  end
+
+  def output_key(host)
+    # outputs all known, not-revocated public keys in the key database
+  end
+
 
   private
 
   def check_for_column(table, column)
+    # returns true if the column is present in the given table
     found = false  # strangely enough it does only work when it's declared here
     @DB.schema(table).each do |element|
       if "#{element[0]}".eql? "#{column}"  # does only work when it's converted to a string, even when input is already a string
@@ -175,6 +187,19 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
     @DB.alter_table :messages do
       drop_column column_title
     end
+  end
+end
+
+class EncryptedAdapter
+  def initialize
+
+  end
+
+  def write_encrypted_message(timestamp, client, private, sender, message, attachment)
+    # a drop-in encryption-enabling wrapper for DatabaseBox
+    # encrypts every message's sender, message and attachments with every single pubkey in the key database
+    db = Database.new
+    db.write_to_database(timestamp, client, private, enc_sender, enc_message, enc_attachment)
   end
 end
 
