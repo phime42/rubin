@@ -35,8 +35,8 @@ class Logger
   end
 
   def register_private_message(message)
-    db = Database.new
-    db.write_to_database(Time.new, 'private', true, message.user.name, message.message)
+    db = DatabaseBox.new
+    db.write_message_to_database(Time.new, 'private', true, message.user.name, message.message, nil)
     #puts "#{Time.new} #{message.user.name} whispers: #{message.message}"
   end
 
@@ -65,7 +65,6 @@ end
 
 class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for databases
   attr_reader :messages_ds  # make dataset readable
-
   def initialize
     # check if database was used before, otherwise generate what we need
     @DB
@@ -113,16 +112,42 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
   def output_host_keypair
     # outputs the server's public !!!and private!!! keypair,
     # so proceed with caution.
+    #   # checks whether there's a private key saved
+    #   if check_for_revocation(key_id)
+    #     @keys_ds.select_group(:private_key)
+    #   end
+    # end
+    # @keys_ds.select_group(:private_key).to_a.each do |x|
+    #   puts x[:private_key]
+    # end
+    if !@keys_ds.where(:private_key).empty?
+      @keys_ds.group(:private_key).to_a.each do |element|
+        if !check_for_revocation(element[:id])  # should be okay because there should be only one valid server key in database
+          private_key = element[:private_key]
+          public_key = element[:public_key]
+          return [public_key, private_key]
+        end
+      end
+      # no non-revoked key in database, creating one; todo: write a logger
+      crypto = CryptoBox.new  # todo: put host key generation somewhere else where it makes sense and is executed not just by accident
+      public_key, private_key = crypto.generate_keypair
+      register_key('host', '127.0.0.1', private_key, public_key)
+    end
 
-
-  end
 
   def output_key(host)
-    # outputs all known, not-revocated public keys in the key database
+    # outputs all known, not-revoked public keys in the key database
   end
 
+  def check_for_revocation(key_id)
+    # takes a key_id and looks it up in the keystore database table. Returns true if revoked, false if not revoked
+    key_hash = @keys_ds.where(:id=>key_id).to_a
+    puts key_hash[0][:revoked]
+  end
 
   private
+
+
 
   def check_for_column(table, column)
     # returns true if the column is present in the given table
@@ -195,11 +220,13 @@ class EncryptedAdapter
 
   end
 
-  def write_encrypted_message(timestamp, client, private, sender, message, attachment)
+  def write_encrypted_message(timestamp, client, private_bool, sender, message, attachment)
     # a drop-in encryption-enabling wrapper for DatabaseBox
     # encrypts every message's sender, message and attachments with every single pubkey in the key database
+
     db = Database.new
-    db.write_to_database(timestamp, client, private, enc_sender, enc_message, enc_attachment)
+    db.write_message_to_database(timestamp, client, private_bool, enc_sender, enc_message, enc_attachment)
+
   end
 end
 
@@ -234,4 +261,6 @@ db.write_message_to_database(Time.now, 'email', false, 'me', 'Hurz', nil)
 #db.write_
 
 # db.register_key('blah', 'host', 'private key', 'public key')
-irc = RelayChat.new('asdfj', 'aksdjflö', 'irc.freenode.org', '#asdfjhasdkjfh')
+# irc = RelayChat.new('asdfj', 'aksdjflö', 'irc.freenode.org', '#asdfjhasdkjfh')
+
+puts db.output_host_keypair.to_a
