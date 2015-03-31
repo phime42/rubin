@@ -96,17 +96,14 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
     # puts @messages_ds.each{|x| p x.name}
   end
 
-  def register_key (description, host, private_key, public_key)
+  def register_key (description, host, private_key, public_key)  # todo: check whether it's a real key or not
     # write key to key database and register it as a new column in the messages database
     @keys_ds.insert(:description => description, :host => host, :private_key => private_key, :public_key => public_key)
 
+    if !private_key.empty?  # todo: check whether the key is already a column in the message table
+      add_new_messages_column(public_key)
+    end
   end
-
-  def hash_key(public_key)
-    Base64.encode64(Digest::SHA256.digest public_key)
-  end
-
-
 
   private
   def setup_message_database
@@ -141,7 +138,7 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
 
   def add_new_messages_column(public_key)
     new_column_title = Base64.encode64(hash_key(public_key))
-    @messages_ds.add_column(:new_column_title.to_sym)
+    @messages_ds.add_column(new_column_title.to_sym, String)
   end
 end
 
@@ -173,4 +170,5 @@ end
 db = DatabaseBox.new('sqlite://test.db')
 db.write_message_to_database(Time.now, 'email', false, 'me', 'Hurz', nil)
 db.read_messages_from_database
-puts db.hash_key 'hurz'
+
+db.register_key('blah', 'host', 'private key', 'public key')
