@@ -98,11 +98,15 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
 
   def register_key (description, host, private_key, public_key)  # todo: check whether it's a real key or not
     # write key to key database and register it as a new column in the messages database
-    @keys_ds.insert(:description => description, :host => host, :private_key => private_key, :public_key => public_key)
+    @keys_ds.insert(:description => description, :host => host, :private_key => private_key, :public_key => public_key, :revoked => false)
 
     if !private_key.empty?  # todo: check whether the key is already a column in the message table
       add_new_messages_column(public_key)
     end
+  end
+
+  def hash_key(public_key)
+    Base64.encode64(Digest::SHA256.digest public_key)
   end
 
   private
@@ -133,12 +137,20 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
       String :host  # contains url / whatever of the host
       String :private_key  # only contains a value if it's a local private key, otherwise nil
       String :public_key  # contains public key of respectiv host
+      TrueClass :revoked  # false if the key is revoked
     end
   end
 
   def add_new_messages_column(public_key)
-    new_column_title = Base64.encode64(hash_key(public_key))
-    @messages_ds.add_column(new_column_title.to_sym, String)
+    # adds a new column consisting of base64 encoded SHA256 of the public key of the remote device
+    new_column_title = hash_key(public_key)
+    @DB.alter_table :messages do
+      add_column new_column_title, :text
+    end
+  end
+
+  def delete_messages_column(public_key)
+
   end
 end
 
@@ -170,5 +182,6 @@ end
 db = DatabaseBox.new('sqlite://test.db')
 db.write_message_to_database(Time.now, 'email', false, 'me', 'Hurz', nil)
 db.read_messages_from_database
+#db.write_
 
 db.register_key('blah', 'host', 'private key', 'public key')
