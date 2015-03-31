@@ -13,7 +13,7 @@ $dbpath = "sqlite://test.db"
 
 class Logger
   include Cinch::Plugin
- 
+
   listen_to :private,    :method => :register_private_message
   listen_to :disconnect, :method => :disco
   listen_to :channel,    :method => :register_public_message
@@ -30,8 +30,8 @@ class Logger
  
   # registers a public message on the channel
   def register_public_message(message)
-    db = DatabaseBox.new($dbpath)
-    db.write_message_to_database(Time.new, 'client', false, message.user.name, message.message)
+    db = DatabaseBox.new
+    db.write_message_to_database(Time.new, 'client', false, message.user.name, message.message, nil)
   end
 
   def register_private_message(message)
@@ -58,6 +58,7 @@ class RelayChat
     def send_message(nick, recipient)
     # sends a private message to the desired nick
     puts 'virtual message'
+
   end
   end
 end
@@ -208,3 +209,4 @@ db.write_message_to_database(Time.now, 'email', false, 'me', 'Hurz', nil)
 #db.write_
 
 # db.register_key('blah', 'host', 'private key', 'public key')
+irc = RelayChat.new('asdfj', 'aksdjflö', 'irc.freenode.org', '#asdfjhasdkjfh')
