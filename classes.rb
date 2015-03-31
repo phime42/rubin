@@ -6,6 +6,9 @@ require 'sequel'
 require 'nacl'
 require 'securerandom'
 require 'sqlite3'
+require 'digest'
+require 'base64'
+
 
 class Logger
   include Cinch::Plugin
@@ -67,6 +70,7 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
     puts 'init started'
     @DB
     @messages_ds
+    @keys_ds
     @database_path = database_url
 
     if !File.exist?(File.basename(database_url))
@@ -85,20 +89,31 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
     @messages_ds.insert(:time => timestamp, :client => client, :private => private, :sender => sender, :message => message, :attachment => attachment)
   end
 
-  def read_messages_from_database
+  def read_messages_from_database()
     # read a message from database
+    # puts @messages_ds.all
+    # puts @messages_ds.get(:time)
+    # puts @messages_ds.each{|x| p x.name}
   end
 
-  def write_keys_to_database (description, host, private_key, public_key)
+  def register_key (description, host, private_key, public_key)
+    # write key to key database and register it as a new column in the messages database
     @keys_ds.insert(:description => description, :host => host, :private_key => private_key, :public_key => public_key)
+
   end
+
+  def hash_key(public_key)
+    Base64.encode64(Digest::SHA256.digest public_key)
+  end
+
+
 
   private
   def setup_message_database
     puts 'setting up db...'
     @DB = Sequel.sqlite
     @DB = Sequel.connect(@database_path)
-    @DB.create_table :messages do
+    @DB.create_table? :messages do
       primary_key :id  # wtf
       Datetime :time  # time when the message was received
       String :client  # client (hazewood_irc, juforum_xmpp...)
@@ -115,7 +130,7 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
     puts 'setting up key database'
     @DB = Sequel.sqlite
     @DB = Sequel.connect(@database_path)
-    @DB.create_table :keys do
+    @DB.create_table? :keys do
       primary_key :id  # id
       String :description  # description of the respective key
       String :host  # contains url / whatever of the host
@@ -123,10 +138,15 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
       String :public_key  # contains public key of respectiv host
     end
   end
+
+  def add_new_messages_column(public_key)
+    new_column_title = Base64.encode64(hash_key(public_key))
+    @messages_ds.add_column(:new_column_title.to_sym)
+  end
 end
 
 class CryptoBox
-  # attr_writer :private_key, :public_key
+  # attr_writer :pri  vate_key, :public_key
   attr_accessor :private_key, :public_key
 
   def initialize
@@ -149,3 +169,8 @@ class CryptoBox
   end
 
 end
+
+db = DatabaseBox.new('sqlite://test.db')
+db.write_message_to_database(Time.now, 'email', false, 'me', 'Hurz', nil)
+db.read_messages_from_database
+puts db.hash_key 'hurz'
