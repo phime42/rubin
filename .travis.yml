@@ -1,11 +1,9 @@
 script: bundle exec rake ci
 language: ruby
-sudo: required
 rvm:
   - 2.1.0
 before_install:
-  - sudo apt-get update
-  - sudo apt-get install libnacl-dev
+- brew update
+- brew install nacl
 os:
-- linux
 - osx
