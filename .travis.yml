@@ -1,3 +1,4 @@
+script: bundle exec rake ci
 language: ruby
 sudo: required
 rvm:
