@@ -98,28 +98,9 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
     @keys_ds.insert(:description => description, :host => host, :private_key => private_key, :public_key => public_key, :revoked => false)
   end
 
-  def register_key_depr (description, host, private_key, public_key)  # todo: check whether it's a real key or not
-    # DEPTRECATED!
-    # write key to key database and register it as a new column in the messages database
-    puts 'register key'
-    @keys_ds.insert(:description => description, :host => host, :private_key => private_key, :public_key => public_key, :revoked => false)
-    # if private_key.nil?  # todo: check whether the key is already a column in the message table
-      if !check_for_column(:keys, public_key)
-        add_new_messages_column(public_key)
-      end
-    # end
-  end
-
   def revoke_key(public_key)
     @keys_ds.where(:public_key=>public_key).update(:revoked=>true)
     puts @keys_ds.where(:public_key=>public_key).to_a
-  end
-
-  def revoke_key_depr(public_key)
-    # checks whether the respective to be revoked key is already a column in the messages and deletes it
-    if check_for_column(:messages, public_key)
-      delete_messages_column(public_key)
-    end
   end
 
   def output_host_keypair
@@ -127,6 +108,9 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
     if found_keypairs.length < 1
       # no keypair found. have to generate one
       # todo: generate keypair
+      crypto = CryptoBox.new  # todo: put host key generation somewhere else where it makes sense and is executed not just by accident
+      public_key, private_key = crypto.generate_keypair
+      register_key('host', '127.0.0.1', private_key, public_key)
     elsif found_keypairs.length == 1
       # exactly one keypair found. returning it
       [found_keypairs[0][:public_key], found_keypairs[0][:private_key]]
@@ -137,36 +121,6 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
       puts 'there is more then one valid host key present, database corrupt. data breach?'
     end
   end
-
-  def output_host_keypair_depr
-    # outputs the server's public !!!and private!!! keypair,
-    # so proceed with caution.
-    #   # checks whether there's a private key saved
-    #   if check_for_revocation(key_id)
-    #     @keys_ds.select_group(:private_key)
-    #   end
-    # end
-    # @keys_ds.select_group(:private_key).to_a.each do |x|
-    #   puts x[:private_key]
-    # end
-    puts @keys_ds.where(:private_key).class
-    # if !@keys_ds.where(:private_key).empty?
-      @keys_ds.group(:private_key).to_a.each do |element|
-        if !check_for_revocation(element[:id])  # should be okay because there should be only one valid server key in database
-          private_key = element[:private_key]
-          public_key = element[:public_key]
-          return [public_key, private_key]
-        end
-      end
-    # end
-
-
-      # no non-revoked key in database, creating one; todo: write a logger
-      puts 'generating new host key'
-      crypto = CryptoBox.new  # todo: put host key generation somewhere else where it makes sense and is executed not just by accident
-      public_key, private_key = crypto.generate_keypair
-      register_key('host', '127.0.0.1', private_key, public_key)
-    end
 
   def output_all_keys
     # returns all known, not-revoked public keys in the key database in an array

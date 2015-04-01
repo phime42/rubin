@@ -12,4 +12,4 @@ db.write_message_to_database(Time.now, 'email', false, 'me', 'Hurz', nil)
 # cb = CryptoBox.new
 # cb.testing_generate_receiving_keypair
 
-db.output_host_keypair
+puts db.output_host_keypair  # => public, private
