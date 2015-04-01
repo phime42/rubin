@@ -136,7 +136,7 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
     key_hash = @keys_ds.where(:id=>key_id).to_a
     key_hash[0][:revoked]
   end
-
+end
 
 
   private
