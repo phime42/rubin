@@ -4,3 +4,6 @@ rvm:
   - 2.1.0
 before_install:
   - sudo apt-get install nacl
+os:
+- linux
+- osx
