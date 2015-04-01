@@ -181,24 +181,6 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
     end
   end
 
-  def add_new_messages_column(public_key)
-    # adds a new column in the messages and keys table consisting of base64 encoded SHA256 of the public key of the remote device
-    new_column_title = hash_key(public_key)
-    @DB.alter_table :messages do
-      add_column new_column_title, :text
-    end
-    @DB.alter_table :keys do
-      add_column new_column_title, :text
-    end
-  end
-
-  def delete_messages_column(column_title)
-    @DB.alter_table :messages do
-      drop_column column_title
-    end
-  end
-end
-
 class EncryptedAdapter
   def initialize
 
