@@ -120,7 +120,7 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
     # @keys_ds.select_group(:private_key).to_a.each do |x|
     #   puts x[:private_key]
     # end
-    if !@keys_ds.where(:private_key).empty?
+    # if @keys_ds.where(:private_key).empty?
       @keys_ds.group(:private_key).to_a.each do |element|
         if !check_for_revocation(element[:id])  # should be okay because there should be only one valid server key in database
           private_key = element[:private_key]
@@ -128,10 +128,14 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
           return [public_key, private_key]
         end
       end
+    # end
+
       # no non-revoked key in database, creating one; todo: write a logger
+      puts 'generating new host key'
       crypto = CryptoBox.new  # todo: put host key generation somewhere else where it makes sense and is executed not just by accident
       public_key, private_key = crypto.generate_keypair
       register_key('host', '127.0.0.1', private_key, public_key)
+      output_host_keypair
     end
 
 
@@ -142,7 +146,7 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
   def check_for_revocation(key_id)
     # takes a key_id and looks it up in the keystore database table. Returns true if revoked, false if not revoked
     key_hash = @keys_ds.where(:id=>key_id).to_a
-    puts key_hash[0][:revoked]
+    key_hash[0][:revoked]
   end
 
   private
@@ -257,10 +261,12 @@ end
 
 db = DatabaseBox.new
 db.write_message_to_database(Time.now, 'email', false, 'me', 'Hurz', nil)
+db.read_messages_from_database
+
 # db.read_messages_from_database
 #db.write_
 
 # db.register_key('blah', 'host', 'private key', 'public key')
 # irc = RelayChat.new('asdfj', 'aksdjflö', 'irc.freenode.org', '#asdfjhasdkjfh')
 
-puts db.output_host_keypair.to_a
+a, b = db.output_host_keypair
