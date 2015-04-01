@@ -123,6 +123,15 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
   end
 
   def output_all_keys
+    pubkey_array = []
+    found_keys = @keys_ds.where(:revoked=>false).where(:private_key=>nil).to_a
+    found_keys.each do |element|
+      pubkey_array << [element[:public_key]]
+    end
+    pubkey_array
+  end
+
+  def output_all_keys_depr
     # returns all known, not-revoked public keys in the key database in an array
     pubkey_array = []
     valid_pubkeys = @keys_ds.where(:revoked=>false).to_a  # a more elegant way to check whether the key is revocated or not
