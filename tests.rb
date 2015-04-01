@@ -12,3 +12,5 @@ cb.testing_generate_receiving_keypair
 
 # puts db.output_all_keys
 # puts db.output_host_keypair  # => public private
+
+irc = RelayChat.new('happybot', 'none', 'irc.freenode.org', '#asdfjhasdkjfh')

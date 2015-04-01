@@ -30,13 +30,14 @@ class Logger
  
   # registers a public message on the channel
   def register_public_message(message)
-    db = DatabaseBox.new
-    db.write_message_to_database(Time.new, 'client', false, message.user.name, message.message, nil)
+    adapter = EncryptedAdapter.new
+    adapter.write_encrypted_message(Time.new, message.channel.to_s, false, message.user.name, message.message, 'nil')
   end
 
   def register_private_message(message)
-    db = DatabaseBox.new
-    db.write_message_to_database(Time.new, 'private', true, message.user.name, message.message, nil)
+    adapter = EncryptedAdapter.new
+    # puts message.server.methods
+    adapter.write_encrypted_message(Time.new, "PM by #{message.user.name}", true, message.user.name, message.message, 'nil')  # todo: get the server url / channel for proper linking
     #puts "#{Time.new} #{message.user.name} whispers: #{message.message}"
   end
 
