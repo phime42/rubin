@@ -141,22 +141,6 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
 
   private
 
-  def check_for_column(table, column)
-    # returns true if the column is present in the given table
-    found = false  # strangely enough it does only work when it's declared here
-    @DB.schema(table).each do |element|
-      if "#{element[0]}".eql? "#{column}"  # does only work when it's converted to a string, even when input is already a string
-        found = true
-      end
-    end
-    if !found  # checks whether the key was found in a database column and returns with an error
-      return false
-    else
-      return true
-    end
-
-  end
-
   def hash_key(public_key)
     Base64.encode64(Digest::SHA256.digest public_key)
   end
