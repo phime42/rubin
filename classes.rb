@@ -174,11 +174,6 @@ end
       TrueClass :revoked  # false if the key is revoked
     end
 
-    @DB.create_table? :nonce do
-      primary_key :id  # id
-      Integer :message_id  # contains the id of the message table
-      String :nonce  # contains the cryptographic nonce of the respective message matching the message id
-    end
   end
 
 class EncryptedAdapter
