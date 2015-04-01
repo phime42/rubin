@@ -1,5 +1,5 @@
 script: bundle exec rake ci
-language: ruby
+language: objective-c
 rvm:
   - 2.1.0
 before_install:
