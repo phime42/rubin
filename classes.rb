@@ -71,10 +71,10 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
     @messages_ds
     @keys_ds
 
-    if !File.exist?(File.basename($dbpath))
+    #if !File.exist?(File.basename($dbpath))
       setup_message_database
       setup_key_database
-    end
+    #end
 
     @DB = Sequel.connect($dbpath)
     @messages_ds = @DB[:messages]  # create dataset for messages
@@ -94,15 +94,28 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
     # puts @messages_ds.each{|x| p x.name}
   end
 
-  def register_key (description, host, private_key, public_key)  # todo: check whether it's a real key or not
-    # write key to key database and register it as a new column in the messages database
+  def register_key (description, host, private_key, public_key)
     @keys_ds.insert(:description => description, :host => host, :private_key => private_key, :public_key => public_key, :revoked => false)
-    if !private_key.empty?  # todo: check whether the key is already a column in the message table
-      add_new_messages_column(public_key)
-    end
+  end
+
+  def register_key_depr (description, host, private_key, public_key)  # todo: check whether it's a real key or not
+    # DEPTRECATED!
+    # write key to key database and register it as a new column in the messages database
+    puts 'register key'
+    @keys_ds.insert(:description => description, :host => host, :private_key => private_key, :public_key => public_key, :revoked => false)
+    # if private_key.nil?  # todo: check whether the key is already a column in the message table
+      if !check_for_column(:keys, public_key)
+        add_new_messages_column(public_key)
+      end
+    # end
   end
 
   def revoke_key(public_key)
+    @keys_ds.where(:public_key=>public_key).update(:revoked=>true)
+    puts @keys_ds.where(:public_key=>public_key).to_a
+  end
+
+  def revoke_key_depr(public_key)
     # checks whether the respective to be revoked key is already a column in the messages and deletes it
     if check_for_column(:messages, public_key)
       delete_messages_column(public_key)
@@ -110,6 +123,22 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
   end
 
   def output_host_keypair
+    found_keypairs = @keys_ds.exclude(:private_key=>nil).exclude(:revoked=>true).to_a
+    if found_keypairs.length < 1
+      # no keypair found. have to generate one
+      # todo: generate keypair
+    elsif found_keypairs.length == 1
+      # exactly one keypair found. returning it
+      [found_keypairs[0][:public_key], found_keypairs[0][:private_key]]
+    elsif found_keypairs.length > 1
+      # there's more than one valid hostkey in the database. something went terribly wrong
+      # todo: think about handling it; maybe delete every host key present
+      # todo: implement helpful logging
+      puts 'there is more then one valid host key present, database corrupt. data breach?'
+    end
+  end
+
+  def output_host_keypair_depr
     # outputs the server's public !!!and private!!! keypair,
     # so proceed with caution.
     #   # checks whether there's a private key saved
@@ -120,7 +149,8 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
     # @keys_ds.select_group(:private_key).to_a.each do |x|
     #   puts x[:private_key]
     # end
-    # if @keys_ds.where(:private_key).empty?
+    puts @keys_ds.where(:private_key).class
+    # if !@keys_ds.where(:private_key).empty?
       @keys_ds.group(:private_key).to_a.each do |element|
         if !check_for_revocation(element[:id])  # should be okay because there should be only one valid server key in database
           private_key = element[:private_key]
@@ -130,14 +160,13 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
       end
     # end
 
+
       # no non-revoked key in database, creating one; todo: write a logger
       puts 'generating new host key'
       crypto = CryptoBox.new  # todo: put host key generation somewhere else where it makes sense and is executed not just by accident
       public_key, private_key = crypto.generate_keypair
       register_key('host', '127.0.0.1', private_key, public_key)
-      output_host_keypair
     end
-
 
   def output_all_keys
     # returns all known, not-revoked public keys in the key database in an array
@@ -157,9 +186,9 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
     key_hash[0][:revoked]
   end
 
+
+
   private
-
-
 
   def check_for_column(table, column)
     # returns true if the column is present in the given table
@@ -182,7 +211,6 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
   end
 
   def setup_message_database
-    puts 'setting up db...'
     @DB = Sequel.sqlite
     @DB = Sequel.connect($dbpath)
     @DB.create_table? :messages do
@@ -199,7 +227,7 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
   end
 
   def setup_key_database
-    puts 'setting up key database'
+    # sets up the key table and the nonce database
     @DB = Sequel.sqlite
     @DB = Sequel.connect($dbpath)
     @DB.create_table? :keys do
@@ -210,12 +238,21 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
       String :public_key  # contains public key of respectiv host
       TrueClass :revoked  # false if the key is revoked
     end
+
+    @DB.create_table? :nonce do
+      primary_key :id  # id
+      Integer :message_id  # contains the id of the message table
+      String :nonce  # contains the cryptographic nonce of the respective message matching the message id
+    end
   end
 
   def add_new_messages_column(public_key)
-    # adds a new column consisting of base64 encoded SHA256 of the public key of the remote device
+    # adds a new column in the messages and keys table consisting of base64 encoded SHA256 of the public key of the remote device
     new_column_title = hash_key(public_key)
     @DB.alter_table :messages do
+      add_column new_column_title, :text
+    end
+    @DB.alter_table :keys do
       add_column new_column_title, :text
     end
   end
@@ -227,7 +264,7 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
   end
 end
 
-class EncryptedAdapter < DatabaseBox
+class EncryptedAdapter
   def initialize
 
   end
@@ -235,17 +272,15 @@ class EncryptedAdapter < DatabaseBox
   def write_encrypted_message(timestamp, client, private_bool, sender, message, attachment)
     # a drop-in encryption-enabling wrapper for DatabaseBox
     # encrypts every message's sender, message and attachments with every single pubkey in the key database
-
+    database = DatabaseBox.new
     crypto = CryptoBox.new
+    database.output_all_keys.each do |public_key|
+
+      database.write_message_to_database(timestamp, client, private_bool, crypto.encrypt_sting(sender, public_key), crypto.encrypt_sting(message, public_key), crypto.encrypt_sting(attachment, public_key))
+    end
 
     # crypto.encrypt_sting(sender, )
     # database.write_message_to_database(timestamp, client, private_bool, enc_sender, enc_message, enc_attachment)
-
-  end
-
-  private
-  def output_all_
-    # reads all pubkeys out of the database and encrypts the string for all valid (i.e. non-revocated) recipients
 
   end
 end
@@ -256,9 +291,15 @@ class CryptoBox
 
   def initialize
     database = DatabaseBox.new
-    pub_key, priv_key = database.output_host_keypair
-    @public_key = pub_key
-    @private_key = priv_key
+    # pub_key, priv_key = database.output_host_keypair
+    @public_key #= pub_key
+    @private_key #= priv_key
+  end
+
+  def testing_generate_receiving_keypair
+    db = DatabaseBox.new
+    pub, priv = NaCl.crypto_box_keypair
+    db.register_key('example description', 'horst', nil, pub)
   end
 
   def generate_keypair
