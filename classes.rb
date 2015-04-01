@@ -139,8 +139,16 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
     end
 
 
-  def output_key(host)
-    # outputs all known, not-revoked public keys in the key database
+  def output_all_keys
+    # returns all known, not-revoked public keys in the key database in an array
+    pubkey_array = []
+    valid_pubkeys = @keys_ds.where(:revoked=>false).to_a  # a more elegant way to check whether the key is revocated or not
+    valid_pubkeys.each do |element|
+      if element[:private_key].eql? nil  # output just the keys where no private key is known
+        pubkey_array << [element[:public_key]]
+      end
+    end
+    pubkey_array
   end
 
   def check_for_revocation(key_id)
@@ -219,7 +227,7 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
   end
 end
 
-class EncryptedAdapter
+class EncryptedAdapter < DatabaseBox
   def initialize
 
   end
@@ -228,8 +236,16 @@ class EncryptedAdapter
     # a drop-in encryption-enabling wrapper for DatabaseBox
     # encrypts every message's sender, message and attachments with every single pubkey in the key database
 
-    db = Database.new
-    db.write_message_to_database(timestamp, client, private_bool, enc_sender, enc_message, enc_attachment)
+    crypto = CryptoBox.new
+
+    # crypto.encrypt_sting(sender, )
+    # database.write_message_to_database(timestamp, client, private_bool, enc_sender, enc_message, enc_attachment)
+
+  end
+
+  private
+  def output_all_
+    # reads all pubkeys out of the database and encrypts the string for all valid (i.e. non-revocated) recipients
 
   end
 end
@@ -239,8 +255,10 @@ class CryptoBox
   attr_accessor :private_key, :public_key
 
   def initialize
-    @public_key
-    @private_key
+    database = DatabaseBox.new
+    pub_key, priv_key = database.output_host_keypair
+    @public_key = pub_key
+    @private_key = priv_key
   end
 
   def generate_keypair
@@ -258,15 +276,3 @@ class CryptoBox
   end
 
 end
-
-db = DatabaseBox.new
-db.write_message_to_database(Time.now, 'email', false, 'me', 'Hurz', nil)
-db.read_messages_from_database
-
-# db.read_messages_from_database
-#db.write_
-
-# db.register_key('blah', 'host', 'private key', 'public key')
-# irc = RelayChat.new('asdfj', 'aksdjflö', 'irc.freenode.org', '#asdfjhasdkjfh')
-
-a, b = db.output_host_keypair
