@@ -82,9 +82,9 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
 
   end
 
-  def write_message_to_database(timestamp, client, private, sender, message, attachment)
+  def write_message_to_database(timestamp, client, private, sender, message, attachment, nonce)
     # write the message from the client application to the database
-    @messages_ds.insert(:time => timestamp, :client => client, :private => private, :sender => sender, :message => message, :attachment => attachment)
+    @messages_ds.insert(:time => timestamp, :client => client, :private => private, :sender => sender, :message => message, :attachment => attachment, :nonce => nonce)
   end
 
   def read_messages_from_database()
@@ -99,7 +99,7 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
   end
 
   def revoke_key(public_key)
-    @keys_ds.where(:public_key=>public_key).update(:revoked=>true)
+    @keys_ds.where(:public_key=>Base64.encode64(public_key)).update(:revoked=>true)
     puts @keys_ds.where(:public_key=>public_key).to_a
   end
 
@@ -108,12 +108,13 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
     if found_keypairs.length < 1
       # no keypair found. have to generate one
       # todo: generate keypair
-      crypto = CryptoBox.new  # todo: put host key generation somewhere else where it makes sense and is executed not just by accident
-      public_key, private_key = crypto.generate_keypair
-      register_key('host', '127.0.0.1', private_key, public_key)
+      # crypto = CryptoBox.new  # todo: put host key generation somewhere else where it makes sense and is executed not just by accident
+      # public_key, private_key = crypto.generate_keypair
+      # register_key('host', '127.0.0.1', private_key, public_key)
+      [nil, nil]
     elsif found_keypairs.length == 1
       # exactly one keypair found. returning it
-      [found_keypairs[0][:public_key], found_keypairs[0][:private_key]]
+      [Base64.decode64(found_keypairs[0][:public_key]), Base64.decode64(found_keypairs[0][:private_key])]
     elsif found_keypairs.length > 1
       # there's more than one valid hostkey in the database. something went terribly wrong
       # todo: think about handling it; maybe delete every host key present
@@ -126,7 +127,7 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
     pubkey_array = []
     found_keys = @keys_ds.where(:revoked=>false).where(:private_key=>nil).to_a
     found_keys.each do |element|
-      pubkey_array << [element[:public_key]]
+      pubkey_array << [Base64.decode64(element[:public_key])]
     end
     pubkey_array
   end
@@ -156,6 +157,7 @@ end
       String :sender  # client specific sender of the message
       String :message  # message; only to use if it's clear that it's just a string!
       File :attachment  # to save images and complete emails
+      String :nonce  # place to save the nonce used for authenticated encryption
     end
     @messages_ds = @DB[:message]  # dataset creation
     @DB.disconnect
@@ -187,8 +189,11 @@ class EncryptedAdapter
     database = DatabaseBox.new
     crypto = CryptoBox.new
     database.output_all_keys.each do |public_key|
-
-      database.write_message_to_database(timestamp, client, private_bool, crypto.encrypt_sting(sender, public_key), crypto.encrypt_sting(message, public_key), crypto.encrypt_sting(attachment, public_key))
+      nonce = crypto.generate_nonce
+      enc_sender = Base64.encode64(crypto.encrypt_sting(sender, public_key[0], nonce))
+      enc_message = Base64.encode64(crypto.encrypt_sting(message, public_key[0], nonce))
+      enc_attachment = Base64.encode64(crypto.encrypt_sting(attachment, public_key[0], nonce))
+      database.write_message_to_database(timestamp, client, private_bool, enc_sender, enc_message, enc_attachment, Base64.encode64(nonce))
     end
 
     # crypto.encrypt_sting(sender, )
@@ -198,30 +203,39 @@ class EncryptedAdapter
 end
 
 class CryptoBox
-  # attr_writer :pri  vate_key, :public_key
+  # attr_writer :private_key, :public_key
   attr_accessor :private_key, :public_key
-
   def initialize
     database = DatabaseBox.new
-    # pub_key, priv_key = database.output_host_keypair
-    @public_key #= pub_key
-    @private_key #= priv_key
+    pub, priv = database.output_host_keypair
+    if pub == nil and priv == nil
+      pub_key, priv_key = generate_keypair
+      database.register_key('host', '127.0.0.1', Base64.encode64(priv_key), Base64.encode64(pub_key))
+      puts 'no host key present, generated new ones'
+    else
+      pub_key, priv_key = database.output_host_keypair
+    end
+
+    @public_key = pub_key
+    @private_key = priv_key
   end
 
   def testing_generate_receiving_keypair
     db = DatabaseBox.new
     pub, priv = NaCl.crypto_box_keypair
-    db.register_key('example description', 'horst', nil, pub)
+    db.register_key('example description', 'horst', nil, Base64.encode64(pub))
   end
 
   def generate_keypair
     @public_key, @private_key = NaCl.crypto_box_keypair
   end
 
-  def encrypt_sting(string_to_encrypt, receiver_key)
-    nonce = SecureRandom.random_bytes(NaCl::BOX_NONCE_LENGTH)
-    cipher_text = NaCl.crypto_box(string_to_encrypt, nonce, receiver_key, @private_key)
-    [cipher_text, nonce]
+  def generate_nonce
+    SecureRandom.random_bytes(NaCl::BOX_NONCE_LENGTH)
+  end
+
+  def encrypt_sting(string_to_encrypt, receiver_key, nonce)
+    NaCl.crypto_box(string_to_encrypt, nonce, receiver_key, @private_key)
   end
 
   def decrypt_string(string_to_decrypt, sender_key, nonce)
