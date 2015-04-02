@@ -23,11 +23,11 @@ class Logger
     @short_format = "%Y-%m-%d"
     @long_format = "%Y-%m-%d %H:%M:%S"
   end
- 
+
   def disco(*)
     puts 'got disconnected'
   end
- 
+
   # registers a public message on the channel
   def register_public_message(message)
     adapter = EncryptedAdapter.new
@@ -157,8 +157,6 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
     key_hash = @keys_ds.where(:id=>key_id).to_a
     key_hash[0][:revoked]
   end
-end
-
 
   private
 
@@ -196,8 +194,8 @@ end
       String :public_key  # contains public key of respectiv host
       TrueClass :revoked  # false if the key is revoked
     end
-
   end
+end
 
 class EncryptedAdapter
   def initialize
