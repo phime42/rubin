@@ -80,19 +80,16 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
     @DB = Sequel.connect($dbpath)
     @messages_ds = @DB[:messages]  # create dataset for messages
     @keys_ds = @DB[:keys]  # create dataset for keys
-
   end
 
-  def write_message_to_database(timestamp, client, private, sender, message, attachment, nonce)
+  def write_message_to_database(timestamp, client, private, sender, message, attachment, nonce, key_id)
     # write the message from the client application to the database
-    @messages_ds.insert(:time => timestamp, :client => client, :private => private, :sender => sender, :message => message, :attachment => attachment, :nonce => nonce)
+    @messages_ds.insert(:time => timestamp, :client => client, :private => private, :sender => sender, :message => message, :attachment => attachment, :nonce => nonce, :key_id =>key_id)
   end
 
-  def read_messages_from_database()
-    # read a message from database
-    # puts @messages_ds.all
-    # puts @messages_ds.get(:time)
-    # puts @messages_ds.each{|x| p x.name}
+  def read_messages_by_id(message_id, key_id)
+    # searches for the message with id = message_id and key_id = key_id
+    @messages_ds.where(:id=>message_id).where(:key_id => key_id)  # outputs an array of messages
   end
 
   def register_key (description, host, private_key, public_key)
@@ -128,7 +125,7 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
     pubkey_array = []
     found_keys = @keys_ds.where(:revoked=>false).where(:private_key=>nil).to_a
     found_keys.each do |element|
-      pubkey_array << [Base64.decode64(element[:public_key])]
+      pubkey_array << [Base64.decode64(element[:public_key]), element[:id]]
     end
     pubkey_array
   end
@@ -159,6 +156,7 @@ end
       String :message  # message; only to use if it's clear that it's just a string!
       File :attachment  # to save images and complete emails
       String :nonce  # place to save the nonce used for authenticated encryption
+      Integer :key_id  # references to the id of the key database for public_key
     end
     @messages_ds = @DB[:message]  # dataset creation
     @DB.disconnect
@@ -194,13 +192,33 @@ class EncryptedAdapter
       enc_sender = Base64.encode64(crypto.encrypt_sting(sender, public_key[0], nonce))
       enc_message = Base64.encode64(crypto.encrypt_sting(message, public_key[0], nonce))
       enc_attachment = Base64.encode64(crypto.encrypt_sting(attachment, public_key[0], nonce))
-      database.write_message_to_database(timestamp, client, private_bool, enc_sender, enc_message, enc_attachment, Base64.encode64(nonce))
+      database.write_message_to_database(timestamp, client, private_bool, enc_sender, enc_message, enc_attachment, Base64.encode64(nonce), public_key[1])
+      # @messages_ds.insert(:time => timestamp, :client => client, :private => private_bool, :sender => enc_sender, :message => enc_message, :attachment => enc_attachment, :nonce => Base64.encode64(nonce), :key_id => public_key[1]) 
     end
-
-    # crypto.encrypt_sting(sender, )
-    # database.write_message_to_database(timestamp, client, private_bool, enc_sender, enc_message, enc_attachment)
-
   end
+
+  def read_encrypted_message_by_id(message_id, key_id)
+    # no use case for server application since the server has no need to decrypt messages, but may be
+    # useful for client applications; server host key is just for signing messages
+    # reads the database for messages where :id == message_id & :public_key == public_key are true
+    # found_messages = @messages_ds.where(:id=>message_id).where(:key_id=>key_id).to_a  # outputs an array of messages
+    db = DatabaseBox.new
+    cb = CryptoBox.new
+    found_messages = db.read_messages_by_id(message_id, key_id).to_a[0]  # since database ids are unique it should only output one dataset
+    time = found_messages[:time]
+    client =  = found_messages[:client]
+    private = found_messages[:private]
+    enc_sender = Base64.decode64(found_messages[:sender])
+    enc_message = Base64.decode64(found_messages[:message])
+    enc_attachment = Base64.decode64(found_messages[:attachment])
+    nonce = Base64.decode64(found_messages[:nonce])
+
+    sender = cb.decrypt_string(enc_sender, sender_key, nonce)
+    message = cb.decrypt_string(enc_message, sender_key, nonce)
+    attachment = cb.decrypt_string(enc_attachment, sender_key, nonce)
+    {'time' => time, 'client' => client, 'private' => private, 'sender' => sender, 'message' => message, 'attachment'=>attachment}  # returns a hash of the decrypted message
+  end
+
 end
 
 class CryptoBox
