@@ -92,6 +92,18 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
     @messages_ds.where(:id=>message_id).where(:key_id => key_id)  # outputs an array of messages
   end
 
+  def output_all_message_ids_by_key_id(key_id)
+    # outputs all key-ids available for the given key_id
+    # lets the client decide which messages he wants to download and saves time and resources
+    # todo: implement ranges ("the last 1000 messages that are for me etc")
+    message_id_output_array = []
+    @messages_ds.where(:key_id => key_id).to_a.each do |element|
+      message_id_output_array << element[:id]
+    end
+    message_id_output_array
+  end
+
+
   def register_key (description, host, private_key, public_key)
     @keys_ds.insert(:description => description, :host => host, :private_key => private_key, :public_key => public_key, :revoked => false)
   end
@@ -187,7 +199,7 @@ class EncryptedAdapter
     # encrypts every message's sender, message and attachments with every single pubkey in the key database
     database = DatabaseBox.new
     crypto = CryptoBox.new
-    database.output_all_keys.each do |public_key|
+    database.output_all_keys.each do |public_key|  # todo: not capable of multiple clients; ATM every message is encrypted for every pubkey known to the database
       nonce = crypto.generate_nonce
       enc_sender = Base64.encode64(crypto.encrypt_sting(sender, public_key[0], nonce))
       enc_message = Base64.encode64(crypto.encrypt_sting(message, public_key[0], nonce))
@@ -206,7 +218,7 @@ class EncryptedAdapter
     cb = CryptoBox.new
     found_messages = db.read_messages_by_id(message_id, key_id).to_a[0]  # since database ids are unique it should only output one dataset
     time = found_messages[:time]
-    client =  = found_messages[:client]
+    client = found_messages[:client]
     private = found_messages[:private]
     enc_sender = Base64.decode64(found_messages[:sender])
     enc_message = Base64.decode64(found_messages[:message])
