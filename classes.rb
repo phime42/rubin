@@ -16,9 +16,17 @@ class Starter
   def initialize
     db = DatabaseBox.new
     db.output_all_clients.each do |x|
-
+      if x[:type].eql? 'irc'
+        # establishing irc listener
+        puts "now listening to #{x[:channel]} on #{x[:host]}"
+        RelayChat.new(x[:nick], x[:realname], x[:host], x[:channel])
+      puts x[:host]
+      elsif x[:type].eql? 'email'
+        # do something pretty with email
+      elsif x[:type].eql? 'xmpp'
+        # do something pretty with xmpp
+      end
     end
-
   end
 end
 
@@ -151,9 +159,13 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
     @keys_ds.insert(:description => description, :host => host, :private_key => private_key, :public_key => public_key, :revoked => false)
   end
 
-  def revoke_key(public_key)
-    @keys_ds.where(:public_key=>Base64.encode64(public_key)).update(:revoked=>true)
-    puts @keys_ds.where(:public_key=>public_key).to_a
+  def revoke_key(public_key, key_id)
+    if !public_key.nil?
+      @keys_ds.where(:public_key=>Base64.encode64(public_key)).update(:revoked=>true)
+    end
+    if !key_id.nil?
+      @keys_ds.where(:id => key_id).update(:revoked=>true)
+    end
   end
 
   def output_host_keypair
