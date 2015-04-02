@@ -72,10 +72,8 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
     @messages_ds
     @keys_ds
 
-    #if !File.exist?(File.basename($dbpath))
-      setup_message_database
-      setup_key_database
-    #end
+    setup_message_database
+    setup_key_database
 
     @DB = Sequel.connect($dbpath)
     @messages_ds = @DB[:messages]  # create dataset for messages
@@ -111,10 +109,12 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
         message_id_output_array << element[:id]
       end
     end
-
     message_id_output_array
   end
 
+  def output_message_by_days(key_id, days)
+    # queries the database for a certain range of days since today
+  end
 
   def register_key (description, host, private_key, public_key)
     @keys_ds.insert(:description => description, :host => host, :private_key => private_key, :public_key => public_key, :revoked => false)
@@ -131,8 +131,6 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
       # no keypair found. have to generate one
       # todo: generate keypair
       # crypto = CryptoBox.new  # todo: put host key generation somewhere else where it makes sense and is executed not just by accident
-      # public_key, private_key = crypto.generate_keypair
-      # register_key('host', '127.0.0.1', private_key, public_key)
       [nil, nil]
     elsif found_keypairs.length == 1
       # exactly one keypair found. returning it
@@ -174,7 +172,7 @@ end
     @DB.create_table? :messages do
       primary_key :id  # wtf
       Datetime :time  # time when the message was received
-      String :client  # client (hazewood_irc, juforum_xmpp...)
+      String :client  # client (IRC XYZ)
       TrueClass :private  # true if the message is private (for IRC, e.g.)
       String :sender  # client specific sender of the message
       String :message  # message; only to use if it's clear that it's just a string!
@@ -217,7 +215,6 @@ class EncryptedAdapter
       enc_message = Base64.encode64(crypto.encrypt_sting(message, public_key[0], nonce))
       enc_attachment = Base64.encode64(crypto.encrypt_sting(attachment, public_key[0], nonce))
       database.write_message_to_database(timestamp, client, private_bool, enc_sender, enc_message, enc_attachment, Base64.encode64(nonce), public_key[1])
-      # @messages_ds.insert(:time => timestamp, :client => client, :private => private_bool, :sender => enc_sender, :message => enc_message, :attachment => enc_attachment, :nonce => Base64.encode64(nonce), :key_id => public_key[1]) 
     end
   end
 
