@@ -11,6 +11,18 @@ require 'base64'
 
 $dbpath = "sqlite://test.db"
 
+class Starter
+  # this class does start up everything
+  def initialize
+    db = DatabaseBox.new
+    db.output_all_clients.each do |x|
+
+    end
+
+  end
+end
+
+
 class Logger
   include Cinch::Plugin
 
@@ -71,14 +83,33 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
     @DB
     @messages_ds
     @keys_ds
+    @clients_ds
 
     setup_message_database
     setup_key_database
+    setup_client_database
 
     @DB = Sequel.connect($dbpath)
     @messages_ds = @DB[:messages]  # create dataset for messages
     @keys_ds = @DB[:keys]  # create dataset for keys
+    @clients_ds = @DB[:clients]
   end
+
+  def output_all_clients
+    # reads the client table and outputs all clients as an array
+    client_array = []
+    @clients_ds.to_a.each do |element|
+      client_array << element
+    end
+    client_array
+  end
+
+  def register_new_client(description, host, type, nick, realname, channel)
+    if @clients_ds.where(:host=>host).where(:channel=>channel).to_a.length.eql? 0  # do not load configuration if a config with same channel and same server already exists
+      @clients_ds.insert(:description=>description, :host=>host, :type=>type, :nick=>nick, :realname=>realname, :channel=>channel)
+    end
+  end
+
 
   def write_message_to_database(timestamp, client, private, sender, message, attachment, nonce, key_id)
     # write the message from the client application to the database
@@ -182,6 +213,22 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
     @DB.disconnect
   end
 
+  def setup_client_database
+    # the client database holds information about the various information sources (read: clients) that the
+    # server should be take into account
+    @DB = Sequel.sqlite
+    @DB = Sequel.connect($dbpath)
+    @DB.create_table? :clients do
+      primary_key :id  # id
+      String :description  # description of client
+      String :host  # contains url / whatever of the host
+      String :type  # contains desired type of connection (only 'irc' is supported by now!)
+      String :nick  # irc only
+      String :realname  # irc only
+      String :channel  # maybe someday multiple channels; one for now. irc only
+    end
+  end
+
   def setup_key_database
     # sets up the key table and the nonce database
     @DB = Sequel.sqlite
@@ -199,7 +246,7 @@ end
 
 class EncryptedAdapter
   def initialize
-
+    # no initialisation needed so far
   end
 
   def write_encrypted_message(timestamp, client, private_bool, sender, message, attachment)
@@ -226,7 +273,7 @@ class EncryptedAdapter
     found_messages = db.read_messages_by_id(message_id, key_id).to_a[0]  # since database ids are unique it should only output one dataset
     time = found_messages[:time]
     client = found_messages[:client]
-    private = found_messages[:private]
+    private_message = found_messages[:private]
     enc_sender = Base64.decode64(found_messages[:sender])
     enc_message = Base64.decode64(found_messages[:message])
     enc_attachment = Base64.decode64(found_messages[:attachment])
@@ -235,7 +282,7 @@ class EncryptedAdapter
     sender = cb.decrypt_string(enc_sender, sender_key, nonce)
     message = cb.decrypt_string(enc_message, sender_key, nonce)
     attachment = cb.decrypt_string(enc_attachment, sender_key, nonce)
-    {'time' => time, 'client' => client, 'private' => private, 'sender' => sender, 'message' => message, 'attachment'=>attachment}  # returns a hash of the decrypted message
+    {'time' => time, 'client' => client, 'private' => private_message, 'sender' => sender, 'message' => message, 'attachment'=>attachment}  # returns a hash of the decrypted message
   end
 
 end
