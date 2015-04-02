@@ -85,7 +85,7 @@ class RelayChat
 end
 
 class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for databases
-  attr_reader :messages_ds  # make dataset readable
+  attr_reader :messages_ds, :keys_ds # make dataset readable
   def initialize
     # check if database was used before, otherwise generate what we need
     @DB
@@ -101,6 +101,11 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
     @messages_ds = @DB[:messages]  # create dataset for messages
     @keys_ds = @DB[:keys]  # create dataset for keys
     @clients_ds = @DB[:clients]
+  end
+
+  def testing_get_private_key_out_of_description(key_id)
+    # long method name should make it perfectly clear: this is strictly for testing and UNSAFE!
+    @keys_ds.where(:id=>key_id).to_a[0][:description]
   end
 
   def output_all_clients
@@ -126,7 +131,7 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
 
   def read_messages_by_id(message_id, key_id)
     # searches for the message with id = message_id and key_id = key_id
-    @messages_ds.where(:id=>message_id).where(:key_id => key_id)  # outputs an array of messages
+    möo = @messages_ds.where(:id => message_id)#.where(:key_id => key_id)  # outputs an array of messages
   end
 
   def output_all_message_ids_by_key_id(key_id)
@@ -275,7 +280,7 @@ class EncryptedAdapter
     end
   end
 
-  def read_encrypted_message_by_id(message_id, key_id)
+  def testing_read_encrypted_message_by_id(message_id, key_id)
     # no use case for server application since the server has no need to decrypt messages, but may be
     # useful for client applications; server host key is just for signing messages
     # reads the database for messages where :id == message_id & :public_key == public_key are true
@@ -289,11 +294,14 @@ class EncryptedAdapter
     enc_sender = Base64.decode64(found_messages[:sender])
     enc_message = Base64.decode64(found_messages[:message])
     enc_attachment = Base64.decode64(found_messages[:attachment])
-    nonce = Base64.decode64(found_messages[:nonce])
+    found_nonce = found_messages[:nonce]
+    nonce = Base64.decode64(found_nonce)
+    sender_key64 = db.testing_get_private_key_out_of_description(key_id)
+    sender_key = Base64.decode64(sender_key64)
 
-    sender = cb.decrypt_string(enc_sender, sender_key, nonce)
-    message = cb.decrypt_string(enc_message, sender_key, nonce)
-    attachment = cb.decrypt_string(enc_attachment, sender_key, nonce)
+    sender = cb.testing_decrypt_string(enc_sender, sender_key, nonce)
+    message = cb.testing_decrypt_string(enc_message, sender_key, nonce)
+    attachment = cb.testing_decrypt_string(enc_attachment, sender_key, nonce)
     {'time' => time, 'client' => client, 'private' => private_message, 'sender' => sender, 'message' => message, 'attachment'=>attachment}  # returns a hash of the decrypted message
   end
 
@@ -320,7 +328,8 @@ class CryptoBox
   def testing_generate_receiving_keypair
     db = DatabaseBox.new
     pub, priv = NaCl.crypto_box_keypair
-    db.register_key('example description', 'horst', nil, Base64.encode64(pub))
+    puts Base64.encode64(priv)
+    db.register_key(Base64.encode64(priv), 'horst', nil, Base64.encode64(pub))
   end
 
   def generate_keypair
@@ -337,6 +346,10 @@ class CryptoBox
 
   def decrypt_string(string_to_decrypt, sender_key, nonce)
     NaCl.crypto_box_open(string_to_decrypt, nonce, sender_key, @private_key)
+  end
+
+  def testing_decrypt_string(string_to_decrypt, receiver_private_key, nonce)
+    NaCl.crypto_box_open(string_to_decrypt, nonce, @public_key, receiver_private_key)
   end
 
 end
