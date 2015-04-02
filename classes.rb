@@ -103,6 +103,18 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
     message_id_output_array
   end
 
+  def output_new_message_ids(key_id, message_id)
+    # outputs an array of every message id bigger than the given message_id
+    message_id_output_array = []
+    @messages_ds.where(:key_id => key_id).to_a.each do |element|
+      if (element[:id] > message_id)  # todo: substitute with direct sequel query
+        message_id_output_array << element[:id]
+      end
+    end
+
+    message_id_output_array
+  end
+
 
   def register_key (description, host, private_key, public_key)
     @keys_ds.insert(:description => description, :host => host, :private_key => private_key, :public_key => public_key, :revoked => false)

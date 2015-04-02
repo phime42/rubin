@@ -16,4 +16,4 @@ cb.testing_generate_receiving_keypair
 # irc = RelayChat.new('happybot', 'none', 'irc.freenode.org', '#asdfjhasdkjfh')
 # adapter.read_encrypted_message_by_id(1, 2)
 
-puts db.read_message_ids_by_key_id(2).length
+puts db.output_new_message_ids(2, 10)
