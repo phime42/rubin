@@ -131,7 +131,7 @@ class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for
 
   def read_messages_by_id(message_id, key_id)
     # searches for the message with id = message_id and key_id = key_id
-    möo = @messages_ds.where(:id => message_id)#.where(:key_id => key_id)  # outputs an array of messages
+    mo = @messages_ds.where(:id => message_id)#.where(:key_id => key_id)  # outputs an array of messages
   end
 
   def output_all_message_ids_by_key_id(key_id)
