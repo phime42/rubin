@@ -7,3 +7,4 @@ before_install:
 - brew install nacl
 os:
 - osx
+script: ruby tests.rb
