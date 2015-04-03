@@ -1,4 +1,5 @@
 source 'https://rubygems.org'
+gem 'rbnacl-libsodium'
 gem 'cinch'
 gem 'sequel'
 gem 'nacl'
