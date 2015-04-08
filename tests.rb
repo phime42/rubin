@@ -18,4 +18,3 @@ db.register_new_client('Haselholz', 'http://irc.freenode.org', 'irc', 'happybot'
 Starter.new
 # db.revoke_key(Base64.decode64('Ddh1VHOvczIpeDGGMocwYyBydVgafWtNAx4w83UIGkQ='), nil)
 
-# puts adapter.testing_read_encrypted_message_by_id(19, 5)
