@@ -3,6 +3,7 @@ GEM
   specs:
     ffi (1.9.8)
     irc-socket (1.0.1)
+    irc_parser (0.1.2)
     openssl (1.0.0.beta)
     rbnacl (3.1.2)
       ffi
@@ -16,6 +17,7 @@ PLATFORMS
 
 DEPENDENCIES
   irc-socket
+  irc_parser
   openssl
   rbnacl-libsodium
   sequel

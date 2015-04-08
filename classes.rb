@@ -289,4 +289,5 @@ class CryptoBox
   end
 end
 
-RelayChat.new('irc.freenode.org', 7000, 'hazewood', 'foo').connect
+
+# RelayChat.new('kornbluth.freenode.net', 7000, '#hazewood', 'u').connect
