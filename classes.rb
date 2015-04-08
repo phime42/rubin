@@ -20,7 +20,6 @@ class Starter
     db.output_all_clients.each do |x|
       if x[:type].eql? 'irc'
         puts "now listening to #{x[:channel]} on #{x[:host]}"
-        RelayChat.new(x[:nick], x[:realname], x[:host], x[:channel])
       puts x[:host]
       elsif x[:type].eql? 'email'
         # do something pretty with email
@@ -31,66 +30,11 @@ class Starter
   end
 end
 
-##
-# Plugin for cinch IRC bot, a framework which is used to provide IRC capabilities
-class Logger
-  include Cinch::Plugin
-
-  listen_to :private,    :method => :register_private_message
-  listen_to :disconnect, :method => :disco
-  listen_to :channel,    :method => :register_public_message
-
-  def initialize(*args)
-    super
-    @short_format = "%Y-%m-%d"
-    @long_format = "%Y-%m-%d %H:%M:%S"
-  end
-
-  def disco(*)
-    puts 'got disconnected'
-  end
-
-  # registers a public message on the channel
-  def register_public_message(message)
-    adapter = EncryptedAdapter.new
-    adapter.write_encrypted_message(Time.new, message.channel.to_s, false, message.user.name, message.message, 'nil')
-  end
-
-  def register_private_message(message)
-    adapter = EncryptedAdapter.new
-    # puts message.server.methods
-    adapter.write_encrypted_message(Time.new, "PM by #{message.user.name}", true, message.user.name, message.message, 'nil')  # todo: get the server url / channel for proper linking
-    #puts "#{Time.new} #{message.user.name} whispers: #{message.message}"
-  end
-
-end
-
 class RelayChat
   def initialize
     @server
     @port
-    @
-  end
-end
-
-class RelayChat_depr
-  def initialize(nick, realname, server, channels)
-    bot = Cinch::Bot.new do
-    configure do |c|
-      c.nick = nick
-      c.realname = realname
-      c.server = server
-      c.channels = [channels]
-      c.plugins.plugins = [Logger]
-    end
-    end
-    bot.start
-
-    def send_message(nick, recipient)
-      # sends a private message to the desired nick
-      # TODO: implement message sending
-      message.reply('stw')
-    end
+    @foo
   end
 end
 
