@@ -2,7 +2,12 @@ GEM
   remote: https://rubygems.org/
   specs:
     cinch (2.2.5)
+    ffi (1.9.6)
     nacl (0.2)
+    rbnacl (3.1.2)
+      ffi
+    rbnacl-libsodium (1.0.2)
+      rbnacl (~> 3.0, >= 3.0.1)
     sequel (4.21.0)
     sqlite3 (1.3.10)
 
@@ -12,5 +17,6 @@ PLATFORMS
 DEPENDENCIES
   cinch
   nacl
+  rbnacl-libsodium
   sequel
   sqlite3

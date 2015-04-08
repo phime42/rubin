@@ -8,16 +8,17 @@ require 'securerandom'
 require 'sqlite3'
 require 'digest'
 require 'base64'
+require 'socket'
 
 $dbpath = "sqlite://test.db"
 
+##
+# manages the startup of all bots and clients
 class Starter
-  # this class does start up everything
   def initialize
     db = DatabaseBox.new
     db.output_all_clients.each do |x|
       if x[:type].eql? 'irc'
-        # establishing irc listener
         puts "now listening to #{x[:channel]} on #{x[:host]}"
         RelayChat.new(x[:nick], x[:realname], x[:host], x[:channel])
       puts x[:host]
@@ -30,7 +31,8 @@ class Starter
   end
 end
 
-
+##
+# Plugin for cinch IRC bot, a framework which is used to provide IRC capabilities
 class Logger
   include Cinch::Plugin
 
@@ -77,14 +79,14 @@ class RelayChat
     bot.start
 
     def send_message(nick, recipient)
-    # sends a private message to the desired nick
-    puts 'virtual message'
-
-  end
+      # sends a private message to the desired nick
+      # TODO: implement message sending
+      message.reply('stw')
+    end
   end
 end
 
-class DatabaseBox  # todo: rewrite DatabaseBox to be a more generic accessor for databases
+class DatabaseBox  # OPTIMIZE: rewrite this class to be more ordered and suitable for general use
   attr_reader :messages_ds, :keys_ds # make dataset readable
   def initialize
     # check if database was used before, otherwise generate what we need
@@ -307,9 +309,10 @@ class EncryptedAdapter
 
 end
 
+##
+# The class CryptoBox poses as a generic adapter for cryptographic services. It uses the NaCl library by djb as backend.
+
 class CryptoBox
-  # attr_writer :private_key, :public_key
-  attr_accessor :private_key, :public_key
   def initialize
     database = DatabaseBox.new
     pub, priv = database.output_host_keypair
@@ -320,7 +323,6 @@ class CryptoBox
     else
       pub_key, priv_key = database.output_host_keypair
     end
-
     @public_key = pub_key
     @private_key = priv_key
   end
@@ -346,10 +348,6 @@ class CryptoBox
 
   def decrypt_string(string_to_decrypt, sender_key, nonce)
     NaCl.crypto_box_open(string_to_decrypt, nonce, sender_key, @private_key)
-  end
-
-  def testing_decrypt_string(string_to_decrypt, receiver_private_key, nonce)
-    NaCl.crypto_box_open(string_to_decrypt, nonce, @public_key, receiver_private_key)
   end
 
 end
