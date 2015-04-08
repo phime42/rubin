@@ -1,10 +1,6 @@
 # script: bundle exec rake ci
-language: objective-c
+language: ruby
 rvm:
   - 2.1.0
-before_install:
-- brew update
-- brew install nacl
-os:
-- osx
+
 script: ruby tests.rb
