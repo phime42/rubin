@@ -114,13 +114,9 @@
   
     <li><a href="./EncryptedAdapter.html">EncryptedAdapter</a>
   
-    <li><a href="./Logger.html">Logger</a>
-  
     <li><a href="./RbNaCl.html">RbNaCl</a>
   
     <li><a href="./RelayChat.html">RelayChat</a>
-  
-    <li><a href="./RelayChat_depr.html">RelayChat_depr</a>
   
     <li><a href="./Starter.html">Starter</a>
   
@@ -179,7 +175,7 @@ Arcieri</p>
 
           
           <div class="method-source-code" id="new-source">
-            <pre><span class="ruby-comment"># File classes.rb, line 292</span>
+            <pre><span class="ruby-comment"># File classes.rb, line 235</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>
   <span class="ruby-identifier">database</span> = <span class="ruby-constant">DatabaseBox</span>.<span class="ruby-identifier">new</span>
   <span class="ruby-identifier">pub</span>, <span class="ruby-identifier">priv</span> = <span class="ruby-identifier">database</span>.<span class="ruby-identifier">output_host_keypair</span>
@@ -229,7 +225,7 @@ message with a given private key</p>
 
           
           <div class="method-source-code" id="encrypt_string-source">
-            <pre><span class="ruby-comment"># File classes.rb, line 322</span>
+            <pre><span class="ruby-comment"># File classes.rb, line 265</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">encrypt_string</span>(<span class="ruby-identifier">string_to_encrypt</span>, <span class="ruby-identifier">sender_private_key</span>, <span class="ruby-identifier">receiver_public_key</span>)
   <span class="ruby-constant">RbNaCl</span><span class="ruby-operator">::</span><span class="ruby-constant">SimpleBox</span>.<span class="ruby-identifier">from_keypair</span>(<span class="ruby-identifier">receiver_public_key</span>, <span class="ruby-identifier">sender_private_key</span>).<span class="ruby-identifier">encrypt</span>(<span class="ruby-identifier">string_to_encrypt</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -264,7 +260,7 @@ seperate handling of the messenge&#39;s nonce is no longer needed!</p>
 
           
           <div class="method-source-code" id="generate_keypair-source">
-            <pre><span class="ruby-comment"># File classes.rb, line 309</span>
+            <pre><span class="ruby-comment"># File classes.rb, line 252</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">generate_keypair</span>
   <span class="ruby-identifier">keypair</span> = <span class="ruby-constant">RbNaCl</span><span class="ruby-operator">::</span><span class="ruby-constant">PrivateKey</span>.<span class="ruby-identifier">generate</span>
   <span class="ruby-ivar">@private_key</span> = <span class="ruby-identifier">keypair</span>
@@ -300,7 +296,7 @@ seperate handling of the messenge&#39;s nonce is no longer needed!</p>
 
           
           <div class="method-source-code" id="host_encrypt_string-source">
-            <pre><span class="ruby-comment"># File classes.rb, line 317</span>
+            <pre><span class="ruby-comment"># File classes.rb, line 260</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">host_encrypt_string</span>(<span class="ruby-identifier">string_to_encrypt</span>, <span class="ruby-identifier">receiver_public_key</span>)
   <span class="ruby-constant">RbNaCl</span><span class="ruby-operator">::</span><span class="ruby-constant">SimpleBox</span>.<span class="ruby-identifier">from_keypair</span>(<span class="ruby-identifier">receiver_public_key</span>, <span class="ruby-ivar">@private_key</span>).<span class="ruby-identifier">encrypt</span>(<span class="ruby-identifier">string_to_encrypt</span>)
 <span class="ruby-keyword">end</span></pre>

@@ -110,13 +110,9 @@
   
     <li><a href="./EncryptedAdapter.html">EncryptedAdapter</a>
   
-    <li><a href="./Logger.html">Logger</a>
-  
     <li><a href="./RbNaCl.html">RbNaCl</a>
   
     <li><a href="./RelayChat.html">RelayChat</a>
-  
-    <li><a href="./RelayChat_depr.html">RelayChat_depr</a>
   
     <li><a href="./Starter.html">Starter</a>
   
@@ -170,7 +166,7 @@
 
           
           <div class="method-source-code" id="new-source">
-            <pre><span class="ruby-comment"># File classes.rb, line 268</span>
+            <pre><span class="ruby-comment"># File classes.rb, line 211</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>
   <span class="ruby-comment"># no initialization needed so far</span>
 <span class="ruby-keyword">end</span></pre>
@@ -209,7 +205,7 @@
 
           
           <div class="method-source-code" id="write_encrypted_message-source">
-            <pre><span class="ruby-comment"># File classes.rb, line 272</span>
+            <pre><span class="ruby-comment"># File classes.rb, line 215</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">write_encrypted_message</span>(<span class="ruby-identifier">timestamp</span>, <span class="ruby-identifier">client</span>, <span class="ruby-identifier">private_bool</span>, <span class="ruby-identifier">sender</span>, <span class="ruby-identifier">message</span>, <span class="ruby-identifier">attachment</span>)
   <span class="ruby-comment"># a drop-in encryption-enabling wrapper for DatabaseBox</span>
   <span class="ruby-comment"># encrypts every message&#39;s sender, message and attachments with every single pubkey in the key database</span>

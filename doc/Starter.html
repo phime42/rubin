@@ -108,13 +108,9 @@
   
     <li><a href="./EncryptedAdapter.html">EncryptedAdapter</a>
   
-    <li><a href="./Logger.html">Logger</a>
-  
     <li><a href="./RbNaCl.html">RbNaCl</a>
   
     <li><a href="./RelayChat.html">RelayChat</a>
-  
-    <li><a href="./RelayChat_depr.html">RelayChat_depr</a>
   
     <li><a href="./Starter.html">Starter</a>
   
@@ -170,13 +166,12 @@
 
           
           <div class="method-source-code" id="new-source">
-            <pre><span class="ruby-comment"># File classes.rb, line 18</span>
+            <pre><span class="ruby-comment"># File classes.rb, line 17</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>
   <span class="ruby-identifier">db</span> = <span class="ruby-constant">DatabaseBox</span>.<span class="ruby-identifier">new</span>
   <span class="ruby-identifier">db</span>.<span class="ruby-identifier">output_all_clients</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">x</span><span class="ruby-operator">|</span>
     <span class="ruby-keyword">if</span> <span class="ruby-identifier">x</span>[<span class="ruby-value">:type</span>].<span class="ruby-identifier">eql?</span> <span class="ruby-string">&#39;irc&#39;</span>
       <span class="ruby-identifier">puts</span> <span class="ruby-node">&quot;now listening to #{x[:channel]} on #{x[:host]}&quot;</span>
-      <span class="ruby-constant">RelayChat</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">x</span>[<span class="ruby-value">:nick</span>], <span class="ruby-identifier">x</span>[<span class="ruby-value">:realname</span>], <span class="ruby-identifier">x</span>[<span class="ruby-value">:host</span>], <span class="ruby-identifier">x</span>[<span class="ruby-value">:channel</span>])
     <span class="ruby-identifier">puts</span> <span class="ruby-identifier">x</span>[<span class="ruby-value">:host</span>]
     <span class="ruby-keyword">elsif</span> <span class="ruby-identifier">x</span>[<span class="ruby-value">:type</span>].<span class="ruby-identifier">eql?</span> <span class="ruby-string">&#39;email&#39;</span>
       <span class="ruby-comment"># do something pretty with email</span>
