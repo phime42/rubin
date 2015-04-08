@@ -1,6 +1,5 @@
 require 'rubygems'
 require 'bundler/setup'
-require 'cinch'
 require 'time'
 require 'sequel'
 require 'rbnacl/libsodium'
