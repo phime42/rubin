@@ -8,6 +8,7 @@ require 'sqlite3'
 require 'digest'
 require 'base64'
 require 'socket'
+require 'irc-socket'
 
 $dbpath = "sqlite://test.db"
 
@@ -65,6 +66,14 @@ class Logger
 end
 
 class RelayChat
+  def initialize
+    @server
+    @port
+    @
+  end
+end
+
+class RelayChat_depr
   def initialize(nick, realname, server, channels)
     bot = Cinch::Bot.new do
     configure do |c|
