@@ -104,13 +104,8 @@ class DatabaseBox  # OPTIMIZE: rewrite this class to be more ordered and suitabl
     @clients_ds = @DB[:clients]
   end
 
-  def testing_get_private_key_out_of_description(key_id)
-    # long method name should make it perfectly clear: this is strictly for testing and UNSAFE!
-    @keys_ds.where(:id=>key_id).to_a[0][:description]
-  end
-
+  # reads the client table and outputs all clients as an array
   def output_all_clients
-    # reads the client table and outputs all clients as an array
     client_array = []
     @clients_ds.to_a.each do |element|
       client_array << element
@@ -124,15 +119,14 @@ class DatabaseBox  # OPTIMIZE: rewrite this class to be more ordered and suitabl
     end
   end
 
-
+  # write the message from the client application to the database
   def write_message_to_database(timestamp, client, private, sender, message, attachment, key_id)
-    # write the message from the client application to the database
     @messages_ds.insert(:time => timestamp, :client => client, :private => private, :sender => sender, :message => message, :attachment => attachment, :key_id =>key_id)
   end
 
+  # searches for the message with id = message_id and key_id = key_id
   def read_messages_by_id(message_id, key_id)
-    # searches for the message with id = message_id and key_id = key_id
-    mo = @messages_ds.where(:id => message_id)#.where(:key_id => key_id)  # outputs an array of messages
+    @messages_ds.where(:id => message_id)#.where(:key_id => key_id)  # outputs an array of messages
   end
 
   def output_all_message_ids_by_key_id(key_id)
@@ -306,8 +300,8 @@ class CryptoBox
   def generate_keypair
     keypair = RbNaCl::PrivateKey.generate
     @private_key = keypair
-    @public_key = keypair.private
-    @public_key, @private_key
+    @public_key = keypair.public_key
+    return @public_key, @private_key
   end
 
   # Encrypts a given string with the given pubkey, signed with the host keypair
@@ -319,5 +313,6 @@ class CryptoBox
   def encrypt_string(string_to_encrypt, sender_private_key, receiver_public_key)
     RbNaCl::SimpleBox.from_keypair(receiver_public_key, sender_private_key).encrypt(string_to_encrypt)
   end
-
 end
+
+puts CryptoBox.new.generate_keypair
