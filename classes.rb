@@ -3,8 +3,7 @@ require 'bundler/setup'
 require 'cinch'
 require 'time'
 require 'sequel'
-require 'nacl'
-require 'securerandom'
+require 'rbnacl/libsodium'
 require 'sqlite3'
 require 'digest'
 require 'base64'
@@ -126,9 +125,9 @@ class DatabaseBox  # OPTIMIZE: rewrite this class to be more ordered and suitabl
   end
 
 
-  def write_message_to_database(timestamp, client, private, sender, message, attachment, nonce, key_id)
+  def write_message_to_database(timestamp, client, private, sender, message, attachment, key_id)
     # write the message from the client application to the database
-    @messages_ds.insert(:time => timestamp, :client => client, :private => private, :sender => sender, :message => message, :attachment => attachment, :nonce => nonce, :key_id =>key_id)
+    @messages_ds.insert(:time => timestamp, :client => client, :private => private, :sender => sender, :message => message, :attachment => attachment, :key_id =>key_id)
   end
 
   def read_messages_by_id(message_id, key_id)
@@ -225,7 +224,6 @@ class DatabaseBox  # OPTIMIZE: rewrite this class to be more ordered and suitabl
       String :sender  # client specific sender of the message
       String :message  # message; only to use if it's clear that it's just a string!
       File :attachment  # to save images and complete emails
-      String :nonce  # place to save the nonce used for authenticated encryption
       Integer :key_id  # references to the id of the key database for public_key
     end
     @messages_ds = @DB[:message]  # dataset creation
@@ -248,8 +246,8 @@ class DatabaseBox  # OPTIMIZE: rewrite this class to be more ordered and suitabl
     end
   end
 
+  # sets up the key database table
   def setup_key_database
-    # sets up the key table and the nonce database
     @DB = Sequel.sqlite
     @DB = Sequel.connect($dbpath)
     @DB.create_table? :keys do
@@ -265,7 +263,7 @@ end
 
 class EncryptedAdapter
   def initialize
-    # no initialisation needed so far
+    # no initialization needed so far
   end
 
   def write_encrypted_message(timestamp, client, private_bool, sender, message, attachment)
@@ -274,80 +272,52 @@ class EncryptedAdapter
     database = DatabaseBox.new
     crypto = CryptoBox.new
     database.output_all_keys.each do |public_key|  # todo: not capable of multiple clients; ATM every message is encrypted for every pubkey known to the database
-      nonce = crypto.generate_nonce
-      enc_sender = Base64.encode64(crypto.encrypt_sting(sender, public_key[0], nonce))
-      enc_message = Base64.encode64(crypto.encrypt_sting(message, public_key[0], nonce))
-      enc_attachment = Base64.encode64(crypto.encrypt_sting(attachment, public_key[0], nonce))
-      database.write_message_to_database(timestamp, client, private_bool, enc_sender, enc_message, enc_attachment, Base64.encode64(nonce), public_key[1])
+      enc_sender = Base64.encode64(crypto.host_encrypt_string(sender, public_key[0]))
+      enc_message = Base64.encode64(crypto.host_encrypt_string(message, public_key[0]))
+      enc_attachment = Base64.encode64(crypto.host_encrypt_string(attachment, public_key[0]))
+      database.write_message_to_database(timestamp, client, private_bool, enc_sender, enc_message, enc_attachment, public_key[1])
     end
-  end
-
-  def testing_read_encrypted_message_by_id(message_id, key_id)
-    # no use case for server application since the server has no need to decrypt messages, but may be
-    # useful for client applications; server host key is just for signing messages
-    # reads the database for messages where :id == message_id & :public_key == public_key are true
-    # found_messages = @messages_ds.where(:id=>message_id).where(:key_id=>key_id).to_a  # outputs an array of messages
-    db = DatabaseBox.new
-    cb = CryptoBox.new
-    found_messages = db.read_messages_by_id(message_id, key_id).to_a[0]  # since database ids are unique it should only output one dataset
-    time = found_messages[:time]
-    client = found_messages[:client]
-    private_message = found_messages[:private]
-    enc_sender = Base64.decode64(found_messages[:sender])
-    enc_message = Base64.decode64(found_messages[:message])
-    enc_attachment = Base64.decode64(found_messages[:attachment])
-    found_nonce = found_messages[:nonce]
-    nonce = Base64.decode64(found_nonce)
-    sender_key64 = db.testing_get_private_key_out_of_description(key_id)
-    sender_key = Base64.decode64(sender_key64)
-
-    sender = cb.testing_decrypt_string(enc_sender, sender_key, nonce)
-    message = cb.testing_decrypt_string(enc_message, sender_key, nonce)
-    attachment = cb.testing_decrypt_string(enc_attachment, sender_key, nonce)
-    {'time' => time, 'client' => client, 'private' => private_message, 'sender' => sender, 'message' => message, 'attachment'=>attachment}  # returns a hash of the decrypted message
   end
 
 end
 
 ##
 # The class CryptoBox poses as a generic adapter for cryptographic services. It uses the NaCl library by djb as backend.
+# Ruby binding is provided by RbNaCl by Tony Arcieri
 
 class CryptoBox
   def initialize
     database = DatabaseBox.new
     pub, priv = database.output_host_keypair
     if pub == nil and priv == nil
-      pub_key, priv_key = generate_keypair
-      database.register_key('host', '127.0.0.1', Base64.encode64(priv_key), Base64.encode64(pub_key))
-      puts 'no host key present, generated new ones'
+      # apparently, there is no host keypair available, so a new one has to be generated, but not without snitching
+      puts 'No host keypair available, have to generate a new one! Possible temper alert!'
+      new_pub, new_priv = generate_keypair
+      database.register_key('host', '127.0.0.1', Base64.encode64(new_priv), Base64.encode64(new_pub))
     else
-      pub_key, priv_key = database.output_host_keypair
+      @public_key = pub
+      @private_key = priv
     end
-    @public_key = pub_key
-    @private_key = priv_key
   end
 
-  def testing_generate_receiving_keypair
-    db = DatabaseBox.new
-    pub, priv = NaCl.crypto_box_keypair
-    puts Base64.encode64(priv)
-    db.register_key(Base64.encode64(priv), 'horst', nil, Base64.encode64(pub))
-  end
-
+  # Generates a new NaCl keypair
+  # also sets the @public_key and @private_key instance variables
+  # Due to the switch to RbNaCl a seperate handling of the messenge's nonce is no longer needed!
   def generate_keypair
-    @public_key, @private_key = NaCl.crypto_box_keypair
+    keypair = RbNaCl::PrivateKey.generate
+    @private_key = keypair
+    @public_key = keypair.private
+    @public_key, @private_key
   end
 
-  def generate_nonce
-    SecureRandom.random_bytes(NaCl::BOX_NONCE_LENGTH)
+  # Encrypts a given string with the given pubkey, signed with the host keypair
+  def host_encrypt_string(string_to_encrypt, receiver_public_key)
+    RbNaCl::SimpleBox.from_keypair(receiver_public_key, @private_key).encrypt(string_to_encrypt)
   end
 
-  def encrypt_sting(string_to_encrypt, receiver_key, nonce)
-    NaCl.crypto_box(string_to_encrypt, nonce, receiver_key, @private_key)
-  end
-
-  def decrypt_string(string_to_decrypt, sender_key, nonce)
-    NaCl.crypto_box_open(string_to_decrypt, nonce, sender_key, @private_key)
+  # Encrypts a given string with the given receiver public key and signs the message with a given private key
+  def encrypt_string(string_to_encrypt, sender_private_key, receiver_public_key)
+    RbNaCl::SimpleBox.from_keypair(receiver_public_key, sender_private_key).encrypt(string_to_encrypt)
   end
 
 end
