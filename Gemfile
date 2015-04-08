@@ -1,6 +1,5 @@
 source 'https://rubygems.org'
 gem 'rbnacl-libsodium'
 gem 'sequel'
-gem 'nacl'
 gem 'sqlite3'
 gem 'irc-socket'

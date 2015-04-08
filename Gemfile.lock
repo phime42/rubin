@@ -3,7 +3,6 @@ GEM
   specs:
     ffi (1.9.8)
     irc-socket (1.0.1)
-    nacl (0.2)
     rbnacl (3.1.2)
       ffi
     rbnacl-libsodium (1.0.2)
@@ -16,7 +15,6 @@ PLATFORMS
 
 DEPENDENCIES
   irc-socket
-  nacl
   rbnacl-libsodium
   sequel
   sqlite3
