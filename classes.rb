@@ -29,12 +29,34 @@ class Starter
   end
 end
 
+
+##
+# This module opens an IRC connection and saves all the raw irc data to the database
 class RelayChat
-  def initialize
-    @server
-    @port
-    @foo
+  def initialize(server, port, channel, nick)
+    @server = server
+    @port = port
+    @channel = channel
+    @nick = nick
   end
+
+  # connects to the given irc channel
+  def connect
+    irc = IRCSocket.new(@server, @port, true)
+    irc.connect
+
+    if irc.connected?
+      irc.nick @nick
+      irc.user(@nick, 0, "*", @nick)
+      while line = irc.read
+        if line.split[1] == '376'
+          irc.join @channel
+        end
+        puts 'Im putting something in the database!!!1!'
+      end
+    end
+  end
+
 end
 
 class DatabaseBox  # OPTIMIZE: rewrite this class to be more ordered and suitable for general use
@@ -267,4 +289,4 @@ class CryptoBox
   end
 end
 
-puts CryptoBox.new.generate_keypair
+RelayChat.new('irc.freenode.org', 7000, 'hazewood', 'foo').connect
