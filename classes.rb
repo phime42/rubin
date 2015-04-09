@@ -8,6 +8,8 @@ require 'digest'
 require 'base64'
 require 'socket'
 require 'irc-socket'
+require 'irc_parser'
+
 
 $dbpath = "sqlite://test.db"
 
@@ -52,7 +54,25 @@ class RelayChat
         if line.split[1] == '376'
           irc.join @channel
         end
-        puts 'Im putting something in the database!!!1!'
+
+        msg = IRCParser.parse_raw("#{line}\r\n")
+        if msg[1].eql? 'JOIN'
+          # connected to channel
+          puts "joined channel #{@channel}@#{@server}"
+        elsif msg[1].eql? 'PRIVMSG'
+          sender_nick = msg[0].split('!~')[0]  # strips off client and IP
+          receiving_channel = msg[2][0]
+          message = msg[2][1]
+
+          adapter = EncryptedAdapter.new
+          if receiving_channel.eql? @nick
+            # received private message
+            adapter.write_encrypted_message(Time.new, "irc@#{@server}", true, sender_nick, message, 'nil')
+          else
+            adapter.write_encrypted_message(Time.new, "irc@#{@server}", false, sender_nick, message, 'nil')
+          end
+        end
+
       end
     end
   end
@@ -268,6 +288,13 @@ class CryptoBox
     end
   end
 
+  # Generates a keypair in order to receive messages. For testing only.
+  def testing_generate_receiving_keypair
+    db = DatabaseBox.new
+    pub, priv = generate_a_keypair
+    db.register_key('example description', 'horst', nil, Base64.encode64(pub))
+  end
+
   # Generates a new NaCl keypair
   # also sets the @public_key and @private_key instance variables
   # Due to the switch to RbNaCl a seperate handling of the messenge's nonce is no longer needed!
@@ -276,6 +303,14 @@ class CryptoBox
     @private_key = keypair
     @public_key = keypair.public_key
     return @public_key, @private_key
+  end
+
+  # Generates a new NaCl keypair, but does not touch instance variables.
+  def generate_a_keypair
+    keypair = RbNaCl::PrivateKey.generate
+    private_key = keypair
+    public_key = keypair.public_key
+    return public_key, private_key
   end
 
   # Encrypts a given string with the given pubkey, signed with the host keypair
