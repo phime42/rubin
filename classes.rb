@@ -77,6 +77,12 @@ class RelayChat
     end
   end
 
+  def send_to_channel(message)
+  end
+
+  def send_to_user(user, message)
+  end
+
 end
 
 class DatabaseBox  # OPTIMIZE: rewrite this class to be more ordered and suitable for general use
