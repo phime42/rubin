@@ -9,6 +9,7 @@ require 'base64'
 require 'socket'
 require 'irc-socket'
 require 'irc_parser'
+require 'thread'
 
 
 $dbpath = "sqlite://test.db"
@@ -16,7 +17,7 @@ $dbpath = "sqlite://test.db"
 ##
 # manages the startup of all bots and clients
 class Starter
-  def initialize
+  def initialize  # note: for each plugin call (network-plugin, irc-plugin...: start a new thread!)
     db = DatabaseBox.new
     db.output_all_clients.each do |x|
       if x[:type].eql? 'irc'
@@ -50,30 +51,40 @@ class RelayChat
     if irc.connected?
       irc.nick @nick
       irc.user(@nick, 0, "*", @nick)
-      while line = irc.read
-        if line.split[1] == '376'
-          irc.join @channel
-        end
 
-        msg = IRCParser.parse_raw("#{line}\r\n")
-        if msg[1].eql? 'JOIN'
-          # connected to channel
-          puts "joined channel #{@channel}@#{@server}"
-        elsif msg[1].eql? 'PRIVMSG'
-          sender_nick = msg[0].split('!~')[0]  # strips off client and IP
-          receiving_channel = msg[2][0]
-          message = msg[2][1]
+      sending = Thread.new {
+        # this thread waits for a message sent by the user and sends it to the irc channel of this instance
+        }
 
-          adapter = EncryptedAdapter.new
-          if receiving_channel.eql? @nick
-            # received private message
-            adapter.write_encrypted_message(Time.new, "irc@#{@server}", true, sender_nick, message, 'nil')
-          else
-            adapter.write_encrypted_message(Time.new, "irc@#{@server}", false, sender_nick, message, 'nil')
+      receiving = Thread.new {
+        # this thread reads messages from this instance's irc and writes them to the database
+        while line = irc.read
+          if line.split[1] == '376'
+            irc.join @channel
+          end
+          puts line
+          msg = IRCParser.parse_raw("#{line}\r\n")
+          if msg[1].eql? 'JOIN'
+            # connected to channel
+            puts "joined channel #{@channel}@#{@server}"
+          elsif msg[1].eql? 'PRIVMSG'
+            sender_nick = msg[0].split('!~')[0]  # strips off client and IP
+            receiving_channel = msg[2][0]
+            message = msg[2][1]
+
+            adapter = EncryptedAdapter.new
+            if receiving_channel.eql? @nick
+              # received private message
+              adapter.write_encrypted_message(Time.new, "irc@#{@server}", true, sender_nick, message, 'nil')
+            else
+              adapter.write_encrypted_message(Time.new, "irc@#{@server}", false, sender_nick, message, 'nil')
+            end
           end
         end
+      }
 
-      end
+      [sending, receiving].each{ |t| t.join }
+
     end
   end
 
@@ -331,4 +342,4 @@ class CryptoBox
 end
 
 
-# RelayChat.new('kornbluth.freenode.net', 7000, '#hazewood', 'u').connect
+RelayChat.new('kornbluth.freenode.net', 7000, '#haselholz', 'pizzablitzerfuuu').connect
