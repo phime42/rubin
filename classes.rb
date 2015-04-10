@@ -18,17 +18,26 @@ $dbpath = "sqlite://test.db"
 # manages the startup of all bots and clients
 class Starter
   def initialize  # note: for each plugin call (network-plugin, irc-plugin...: start a new thread!)
+    services_to_start = []
     db = DatabaseBox.new
     db.output_all_clients.each do |x|
       if x[:type].eql? 'irc'
-        puts "now listening to #{x[:channel]} on #{x[:host]}"
-      puts x[:host]
+        irc_queue = Queue.new
+        services_to_start << Thread.new {
+          puts "connecting to #{x[:channel]} on #{x[:host]}..."
+          host = x[:host].split(':')[1].split('//')[1]  # http://irc.freenode.org:7000 --> irc.freenode.org
+          port = x[:host].split(':')[2]
+          channel = x[:channel]
+          nick = x[:nick]
+          RelayChat.new(host, port, channel, nick).connect
+        }
       elsif x[:type].eql? 'email'
         # do something pretty with email
       elsif x[:type].eql? 'xmpp'
         # do something pretty with xmpp
       end
     end
+    services_to_start.each{ |t| t.join }
   end
 end
 
@@ -62,7 +71,7 @@ class RelayChat
           if line.split[1] == '376'
             irc.join @channel
           end
-          puts line
+          # puts line  # reactivate if a detailed unfiltered output of the irc server messages is desired
           msg = IRCParser.parse_raw("#{line}\r\n")
           if msg[1].eql? 'JOIN'
             # connected to channel
@@ -75,9 +84,9 @@ class RelayChat
             adapter = EncryptedAdapter.new
             if receiving_channel.eql? @nick
               # received private message
-              adapter.write_encrypted_message(Time.new, "irc@#{@server}", true, sender_nick, message, 'nil')
+              adapter.write_encrypted_message(Time.new, "#{@channel.split('#')[1]}@#{@server}", true, sender_nick, message, 'nil')
             else
-              adapter.write_encrypted_message(Time.new, "irc@#{@server}", false, sender_nick, message, 'nil')
+              adapter.write_encrypted_message(Time.new, "#{@channel.split('#')[1]}@#{@server}", false, sender_nick, message, 'nil')
             end
           end
         end
@@ -342,4 +351,8 @@ class CryptoBox
 end
 
 
-RelayChat.new('kornbluth.freenode.net', 7000, '#haselholz', 'pizzablitzerfuuu').connect
+# RelayChat.new('irc.freenode.net', 7000, '#haselholz', 'dsfgbvwwe').connect
+
+Starter.new
+
+# TestStarter.new.test_init
