@@ -4,7 +4,7 @@ GEM
     ffi (1.9.8)
     irc-socket (1.0.1)
     irc_parser (0.1.2)
-    json (1.7.7)
+    json (1.8.2)
     openssl (1.0.0.beta)
     rack (1.6.0)
     rack-protection (1.5.3)
