@@ -350,9 +350,4 @@ class CryptoBox
   end
 end
 
-
-# RelayChat.new('irc.freenode.net', 7000, '#haselholz', 'dsfgbvwwe').connect
-
 Starter.new
-
-# TestStarter.new.test_init
