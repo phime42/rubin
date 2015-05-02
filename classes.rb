@@ -384,12 +384,12 @@ get '/messages/since/:id' do
 
 end
 
-get '/user=:user/messages=all' do
+get '/user=:user/messages' do
   content_type :json
   db.output_all_message_ids_by_key_id(params[:user]).to_json
 end
 
-get '/user=:user/message=:message' do  # some day this should be protected with an auth key, but not necessary
+get '/user?id=:user/message?id=:message' do  # some day this should be protected with an auth key, but not necessary
   content_type :json
   db.output_messages_by_id(params[:message], params[:user]).to_json
 end
