@@ -150,8 +150,14 @@ class DatabaseBox  # OPTIMIZE: rewrite this class to be more ordered and suitabl
   end
 
   # searches for the message with id = message_id and key_id = key_id
-  def read_messages_by_id(message_id, key_id)
-    @messages_ds.where(:id => message_id)#.where(:key_id => key_id)  # outputs an array of messages
+  def output_messages_by_id(message_id, key_id)
+    message = @messages_ds.where(:id => message_id).to_a[0]  # outputs an array of messages
+    database_key_id = message[:key_id]
+    if database_key_id.eql?(key_id.to_i)
+      message
+    else
+      nil
+    end
   end
 
   def output_all_message_ids_by_key_id(key_id)
@@ -209,6 +215,11 @@ class DatabaseBox  # OPTIMIZE: rewrite this class to be more ordered and suitabl
       # todo: implement helpful logging
       puts 'there is more then one valid host key present, database corrupt. data breach?'
     end
+  end
+
+  def output_host_public_key
+    public_key, private_key = self.output_host_keypair
+    public_key
   end
 
   def output_all_keys
@@ -355,6 +366,10 @@ class CryptoBox
   end
 end
 
+Thread.new do
+  Starter.new
+end
+
 db = DatabaseBox.new
 # require 'rack/ssl'
 # use Rack::SSL
@@ -369,17 +384,19 @@ get '/messages/since/:id' do
 
 end
 
-get '/user/:user_id/message/:message_id' do
-  db.read_messages_by_id(params[:messageid], params[:keyid]).to_json
+get '/user=:user/messages=all' do
+  content_type :json
+  db.output_all_message_ids_by_key_id(params[:user]).to_json
+end
+
+get '/user=:user/message=:message' do  # some day this should be protected with an auth key, but not necessary
+  content_type :json
+  db.output_messages_by_id(params[:message], params[:user]).to_json
 end
 
 get '/key' do
-  "Host Key"
+  "#{db.output_host_public_key}"
 end
 
-
-
-
-Thread.new do
-  Starter.new
-end
+# db = DatabaseBox.new
+# puts db.output_messages_by_id(10,3)
