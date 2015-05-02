@@ -2,6 +2,8 @@ require 'rubygems'
 require 'bundler/setup'
 require 'time'
 require 'sequel'
+require 'sinatra'
+require 'json'
 require 'rbnacl/libsodium'
 require 'sqlite3'
 require 'digest'
@@ -13,6 +15,9 @@ require 'thread'
 
 
 $dbpath = "sqlite://test.db"
+
+
+
 
 ##
 # manages the startup of all bots and clients
@@ -350,4 +355,31 @@ class CryptoBox
   end
 end
 
-Starter.new
+db = DatabaseBox.new
+# require 'rack/ssl'
+# use Rack::SSL
+
+get '/messages/since/:time' do
+  time = params[:time]
+  "#{Time.parse(time)}"
+end
+
+get '/messages/since/:id' do
+  content_type :json
+
+end
+
+get '/user/:user_id/message/:message_id' do
+  db.read_messages_by_id(params[:messageid], params[:keyid]).to_json
+end
+
+get '/key' do
+  "Host Key"
+end
+
+
+
+
+Thread.new do
+  Starter.new
+end

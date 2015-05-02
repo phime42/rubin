@@ -77,9 +77,13 @@
     
     <li ><a href="#method-i-encrypt_string">#encrypt_string</a>
     
+    <li ><a href="#method-i-generate_a_keypair">#generate_a_keypair</a>
+    
     <li ><a href="#method-i-generate_keypair">#generate_keypair</a>
     
     <li ><a href="#method-i-host_encrypt_string">#host_encrypt_string</a>
+    
+    <li ><a href="#method-i-testing_generate_receiving_keypair">#testing_generate_receiving_keypair</a>
     
   </ul>
 </nav>
@@ -117,6 +121,8 @@
     <li><a href="./RbNaCl.html">RbNaCl</a>
   
     <li><a href="./RelayChat.html">RelayChat</a>
+  
+    <li><a href="./RestApi.html">RestApi</a>
   
     <li><a href="./Starter.html">Starter</a>
   
@@ -175,7 +181,7 @@ Arcieri</p>
 
           
           <div class="method-source-code" id="new-source">
-            <pre><span class="ruby-comment"># File classes.rb, line 235</span>
+            <pre><span class="ruby-comment"># File classes.rb, line 335</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>
   <span class="ruby-identifier">database</span> = <span class="ruby-constant">DatabaseBox</span>.<span class="ruby-identifier">new</span>
   <span class="ruby-identifier">pub</span>, <span class="ruby-identifier">priv</span> = <span class="ruby-identifier">database</span>.<span class="ruby-identifier">output_host_keypair</span>
@@ -225,7 +231,7 @@ message with a given private key</p>
 
           
           <div class="method-source-code" id="encrypt_string-source">
-            <pre><span class="ruby-comment"># File classes.rb, line 265</span>
+            <pre><span class="ruby-comment"># File classes.rb, line 380</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">encrypt_string</span>(<span class="ruby-identifier">string_to_encrypt</span>, <span class="ruby-identifier">sender_private_key</span>, <span class="ruby-identifier">receiver_public_key</span>)
   <span class="ruby-constant">RbNaCl</span><span class="ruby-operator">::</span><span class="ruby-constant">SimpleBox</span>.<span class="ruby-identifier">from_keypair</span>(<span class="ruby-identifier">receiver_public_key</span>, <span class="ruby-identifier">sender_private_key</span>).<span class="ruby-identifier">encrypt</span>(<span class="ruby-identifier">string_to_encrypt</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -237,6 +243,42 @@ message with a given private key</p>
 
         
       </div><!-- encrypt_string-method -->
+
+    
+      <div id="method-i-generate_a_keypair" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">generate_a_keypair</span><span
+            class="method-args">()</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Generates a new NaCl keypair, but does not touch instance variables.</p>
+          
+          
+
+          
+          <div class="method-source-code" id="generate_a_keypair-source">
+            <pre><span class="ruby-comment"># File classes.rb, line 367</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">generate_a_keypair</span>
+  <span class="ruby-identifier">keypair</span> = <span class="ruby-constant">RbNaCl</span><span class="ruby-operator">::</span><span class="ruby-constant">PrivateKey</span>.<span class="ruby-identifier">generate</span>
+  <span class="ruby-identifier">private_key</span> = <span class="ruby-identifier">keypair</span>
+  <span class="ruby-identifier">public_key</span> = <span class="ruby-identifier">keypair</span>.<span class="ruby-identifier">public_key</span>
+  <span class="ruby-keyword">return</span> <span class="ruby-identifier">public_key</span>, <span class="ruby-identifier">private_key</span>
+<span class="ruby-keyword">end</span></pre>
+          </div><!-- generate_a_keypair-source -->
+          
+        </div>
+
+        
+
+        
+      </div><!-- generate_a_keypair-method -->
 
     
       <div id="method-i-generate_keypair" class="method-detail ">
@@ -260,7 +302,7 @@ seperate handling of the messenge&#39;s nonce is no longer needed!</p>
 
           
           <div class="method-source-code" id="generate_keypair-source">
-            <pre><span class="ruby-comment"># File classes.rb, line 252</span>
+            <pre><span class="ruby-comment"># File classes.rb, line 359</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">generate_keypair</span>
   <span class="ruby-identifier">keypair</span> = <span class="ruby-constant">RbNaCl</span><span class="ruby-operator">::</span><span class="ruby-constant">PrivateKey</span>.<span class="ruby-identifier">generate</span>
   <span class="ruby-ivar">@private_key</span> = <span class="ruby-identifier">keypair</span>
@@ -296,7 +338,7 @@ seperate handling of the messenge&#39;s nonce is no longer needed!</p>
 
           
           <div class="method-source-code" id="host_encrypt_string-source">
-            <pre><span class="ruby-comment"># File classes.rb, line 260</span>
+            <pre><span class="ruby-comment"># File classes.rb, line 375</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">host_encrypt_string</span>(<span class="ruby-identifier">string_to_encrypt</span>, <span class="ruby-identifier">receiver_public_key</span>)
   <span class="ruby-constant">RbNaCl</span><span class="ruby-operator">::</span><span class="ruby-constant">SimpleBox</span>.<span class="ruby-identifier">from_keypair</span>(<span class="ruby-identifier">receiver_public_key</span>, <span class="ruby-ivar">@private_key</span>).<span class="ruby-identifier">encrypt</span>(<span class="ruby-identifier">string_to_encrypt</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -308,6 +350,41 @@ seperate handling of the messenge&#39;s nonce is no longer needed!</p>
 
         
       </div><!-- host_encrypt_string-method -->
+
+    
+      <div id="method-i-testing_generate_receiving_keypair" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">testing_generate_receiving_keypair</span><span
+            class="method-args">()</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Generates a keypair in order to receive messages. For testing only.</p>
+          
+          
+
+          
+          <div class="method-source-code" id="testing_generate_receiving_keypair-source">
+            <pre><span class="ruby-comment"># File classes.rb, line 350</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">testing_generate_receiving_keypair</span>
+  <span class="ruby-identifier">db</span> = <span class="ruby-constant">DatabaseBox</span>.<span class="ruby-identifier">new</span>
+  <span class="ruby-identifier">pub</span>, <span class="ruby-identifier">priv</span> = <span class="ruby-identifier">generate_a_keypair</span>
+  <span class="ruby-identifier">db</span>.<span class="ruby-identifier">register_key</span>(<span class="ruby-string">&#39;example description&#39;</span>, <span class="ruby-string">&#39;horst&#39;</span>, <span class="ruby-keyword">nil</span>, <span class="ruby-constant">Base64</span>.<span class="ruby-identifier">encode64</span>(<span class="ruby-identifier">pub</span>))
+<span class="ruby-keyword">end</span></pre>
+          </div><!-- testing_generate_receiving_keypair-source -->
+          
+        </div>
+
+        
+
+        
+      </div><!-- testing_generate_receiving_keypair-method -->
 
     
     </section><!-- public-instance-method-details -->

@@ -1,6 +1,8 @@
 source 'https://rubygems.org'
 gem 'rbnacl-libsodium'
 gem 'sequel'
+gem 'sinatra'
+gem 'json'
 gem 'sqlite3'
 gem 'irc-socket'
 gem 'openssl'
