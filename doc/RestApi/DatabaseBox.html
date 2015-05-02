@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+
+<title>class RestApi::DatabaseBox - RDoc Documentation</title>
+
+<link type="text/css" media="screen" href="../rdoc.css" rel="stylesheet">
+
+<script type="text/javascript">
+  var rdoc_rel_prefix = "../";
+</script>
+
+<script type="text/javascript" charset="utf-8" src="../js/jquery.js"></script>
+<script type="text/javascript" charset="utf-8" src="../js/navigation.js"></script>
+<script type="text/javascript" charset="utf-8" src="../js/search_index.js"></script>
+<script type="text/javascript" charset="utf-8" src="../js/search.js"></script>
+<script type="text/javascript" charset="utf-8" src="../js/searcher.js"></script>
+<script type="text/javascript" charset="utf-8" src="../js/darkfish.js"></script>
+
+
+<body id="top" class="class">
+<nav id="metadata">
+  <nav id="home-section" class="section">
+  <h3 class="section-header">
+    <a href="../index.html">Home</a>
+    <a href="../table_of_contents.html#classes">Classes</a>
+    <a href="../table_of_contents.html#methods">Methods</a>
+  </h3>
+</nav>
+
+
+  <nav id="search-section" class="section project-section" class="initially-hidden">
+  <form action="#" method="get" accept-charset="utf-8">
+    <h3 class="section-header">
+      <input type="text" name="search" placeholder="Search" id="search-field"
+             title="Type to search, Up and Down to navigate, Enter to load">
+    </h3>
+  </form>
+
+  <ul id="search-results" class="initially-hidden"></ul>
+</nav>
+
+
+  
+
+  <div id="file-metadata">
+    <nav id="file-list-section" class="section">
+  <h3 class="section-header">Defined In</h3>
+  <ul>
+    <li>classes.rb
+  </ul>
+</nav>
+
+    
+  </div>
+
+  <div id="class-metadata">
+    
+    <nav id="parent-class-section" class="section">
+  <h3 class="section-header">Parent</h3>
+  
+  <p class="link">Object
+  
+</nav>
+
+    
+    
+    <!-- Method Quickref -->
+<nav id="method-list-section" class="section">
+  <h3 class="section-header">Methods</h3>
+
+  <ul class="link-list">
+    
+    <li ><a href="#method-c-new">::new</a>
+    
+    <li ><a href="#method-i-check_for_revocation">#check_for_revocation</a>
+    
+    <li ><a href="#method-i-output_all_clients">#output_all_clients</a>
+    
+    <li ><a href="#method-i-output_all_keys">#output_all_keys</a>
+    
+    <li ><a href="#method-i-output_all_message_ids_by_key_id">#output_all_message_ids_by_key_id</a>
+    
+    <li ><a href="#method-i-output_host_keypair">#output_host_keypair</a>
+    
+    <li ><a href="#method-i-output_message_by_days">#output_message_by_days</a>
+    
+    <li ><a href="#method-i-output_new_message_ids">#output_new_message_ids</a>
+    
+    <li ><a href="#method-i-read_messages_by_id">#read_messages_by_id</a>
+    
+    <li ><a href="#method-i-register_key">#register_key</a>
+    
+    <li ><a href="#method-i-register_new_client">#register_new_client</a>
+    
+    <li ><a href="#method-i-revoke_key">#revoke_key</a>
+    
+    <li ><a href="#method-i-write_message_to_database">#write_message_to_database</a>
+    
+  </ul>
+</nav>
+
+  </div>
+
+  <div id="project-metadata">
+    <nav id="fileindex-section" class="section project-section">
+  <h3 class="section-header">Pages</h3>
+
+  <ul>
+  
+    <li class="file"><a href="../Gemfile.html">Gemfile</a>
+  
+    <li class="file"><a href="../Gemfile_lock.html">Gemfile.lock</a>
+  
+    <li class="file"><a href="../README_md.html">README</a>
+  
+    <li class="file"><a href="../doc/CryptoBox_html.html">CryptoBox.html</a>
+  
+    <li class="file"><a href="../doc/DatabaseBox_html.html">DatabaseBox.html</a>
+  
+    <li class="file"><a href="../doc/EncryptedAdapter_html.html">EncryptedAdapter.html</a>
+  
+    <li class="file"><a href="../doc/Gemfile_html.html">Gemfile.html</a>
+  
+    <li class="file"><a href="../doc/Gemfile_lock_html.html">Gemfile_lock.html</a>
+  
+    <li class="file"><a href="../doc/README_md_html.html">README_md.html</a>
+  
+    <li class="file"><a href="../doc/RbNaCl_html.html">RbNaCl.html</a>
+  
+    <li class="file"><a href="../doc/RelayChat_html.html">RelayChat.html</a>
+  
+    <li class="file"><a href="../doc/Starter_html.html">Starter.html</a>
+  
+    <li class="file"><a href="../doc/created_rid.html">created.rid</a>
+  
+    <li class="file"><a href="../doc/doc/created_rid_html.html">created_rid.html</a>
+  
+    <li class="file"><a href="../doc/index_html.html">index.html</a>
+  
+    <li class="file"><a href="../doc/js/darkfish_js.html">darkfish.js</a>
+  
+    <li class="file"><a href="../doc/js/jquery_js.html">jquery.js</a>
+  
+    <li class="file"><a href="../doc/js/navigation_js.html">navigation.js</a>
+  
+    <li class="file"><a href="../doc/js/search_js.html">search.js</a>
+  
+    <li class="file"><a href="../doc/js/search_index_js.html">search_index.js</a>
+  
+    <li class="file"><a href="../doc/js/searcher_js.html">searcher.js</a>
+  
+    <li class="file"><a href="../doc/rdoc_css.html">rdoc.css</a>
+  
+    <li class="file"><a href="../doc/table_of_contents_html.html">table_of_contents.html</a>
+  
+  </ul>
+</nav>
+
+    <nav id="classindex-section" class="section project-section">
+  <h3 class="section-header">Class and Module Index</h3>
+
+  <ul class="link-list">
+  
+    <li><a href="../RbNaCl.html">RbNaCl</a>
+  
+    <li><a href="../RestApi.html">RestApi</a>
+  
+    <li><a href="../RestApi/CryptoBox.html">RestApi::CryptoBox</a>
+  
+    <li><a href="../RestApi/DatabaseBox.html">RestApi::DatabaseBox</a>
+  
+    <li><a href="../RestApi/EncryptedAdapter.html">RestApi::EncryptedAdapter</a>
+  
+    <li><a href="../RestApi/RelayChat.html">RestApi::RelayChat</a>
+  
+    <li><a href="../Starter.html">Starter</a>
+  
+  </ul>
+</nav>
+
+  </div>
+</nav>
+
+<div id="documentation">
+  <h1 class="class">class RestApi::DatabaseBox</h1>
+
+  <div id="description" class="description">
+    
+  </div><!-- description -->
+
+  
+  
+  
+  <section id="5Buntitled-5D" class="documentation-section">
+    
+
+    
+
+    
+
+    
+    <!-- Attributes -->
+    <section id="attribute-method-details" class="method-section section">
+      <h3 class="section-header">Attributes</h3>
+
+      
+      <div id="attribute-i-keys_ds" class="method-detail">
+        <div class="method-heading attribute-method-heading">
+          <span class="method-name">keys_ds</span><span
+            class="attribute-access-type">[R]</span>
+        </div>
+
+        <div class="method-description">
+        
+        
+        
+        </div>
+      </div>
+      
+      <div id="attribute-i-messages_ds" class="method-detail">
+        <div class="method-heading attribute-method-heading">
+          <span class="method-name">messages_ds</span><span
+            class="attribute-access-type">[R]</span>
+        </div>
+
+        <div class="method-description">
+        
+        
+        
+        </div>
+      </div>
+      
+    </section><!-- attribute-method-details -->
+    
+
+    <!-- Methods -->
+    
+     <section id="public-class-5Buntitled-5D-method-details" class="method-section section">
+      <h3 class="section-header">Public Class Methods</h3>
+
+    
+      <div id="method-c-new" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">new</span><span
+            class="method-args">()</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          
+          
+          
+
+          
+          <div class="method-source-code" id="new-source">
+            <pre><span class="ruby-comment"># File classes.rb, line 141</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>
+  <span class="ruby-comment"># check if database was used before, otherwise generate what we need</span>
+  <span class="ruby-ivar">@DB</span>
+  <span class="ruby-ivar">@messages_ds</span>
+  <span class="ruby-ivar">@keys_ds</span>
+  <span class="ruby-ivar">@clients_ds</span>
+
+  <span class="ruby-identifier">setup_message_database</span>
+  <span class="ruby-identifier">setup_key_database</span>
+  <span class="ruby-identifier">setup_client_database</span>
+
+  <span class="ruby-ivar">@DB</span> = <span class="ruby-constant">Sequel</span>.<span class="ruby-identifier">connect</span>(<span class="ruby-identifier">$dbpath</span>)
+  <span class="ruby-ivar">@messages_ds</span> = <span class="ruby-ivar">@DB</span>[<span class="ruby-value">:messages</span>]  <span class="ruby-comment"># create dataset for messages</span>
+  <span class="ruby-ivar">@keys_ds</span> = <span class="ruby-ivar">@DB</span>[<span class="ruby-value">:keys</span>]  <span class="ruby-comment"># create dataset for keys</span>
+  <span class="ruby-ivar">@clients_ds</span> = <span class="ruby-ivar">@DB</span>[<span class="ruby-value">:clients</span>]
+<span class="ruby-keyword">end</span></pre>
+          </div><!-- new-source -->
+          
+        </div>
+
+        
+
+        
+      </div><!-- new-method -->
+
+    
+    </section><!-- public-class-method-details -->
+  
+     <section id="public-instance-5Buntitled-5D-method-details" class="method-section section">
+      <h3 class="section-header">Public Instance Methods</h3>
+
+    
+      <div id="method-i-check_for_revocation" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">check_for_revocation</span><span
+            class="method-args">(key_id)</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          
+          
+          
+
+          
+          <div class="method-source-code" id="check_for_revocation-source">
+            <pre><span class="ruby-comment"># File classes.rb, line 249</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">check_for_revocation</span>(<span class="ruby-identifier">key_id</span>)
+  <span class="ruby-comment"># takes a key_id and looks it up in the keystore database table. Returns true if revoked, false if not revoked</span>
+  <span class="ruby-identifier">key_hash</span> = <span class="ruby-ivar">@keys_ds</span>.<span class="ruby-identifier">where</span>(<span class="ruby-value">:id=</span><span class="ruby-operator">&gt;</span><span class="ruby-identifier">key_id</span>).<span class="ruby-identifier">to_a</span>
+  <span class="ruby-identifier">key_hash</span>[<span class="ruby-value">0</span>][<span class="ruby-value">:revoked</span>]
+<span class="ruby-keyword">end</span></pre>
+          </div><!-- check_for_revocation-source -->
+          
+        </div>
+
+        
+
+        
+      </div><!-- check_for_revocation-method -->
+
+    
+      <div id="method-i-output_all_clients" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">output_all_clients</span><span
+            class="method-args">()</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>reads the client table and outputs all clients as an array</p>
+          
+          
+
+          
+          <div class="method-source-code" id="output_all_clients-source">
+            <pre><span class="ruby-comment"># File classes.rb, line 159</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">output_all_clients</span>
+  <span class="ruby-identifier">client_array</span> = []
+  <span class="ruby-ivar">@clients_ds</span>.<span class="ruby-identifier">to_a</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">element</span><span class="ruby-operator">|</span>
+    <span class="ruby-identifier">client_array</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">element</span>
+  <span class="ruby-keyword">end</span>
+  <span class="ruby-identifier">client_array</span>
+<span class="ruby-keyword">end</span></pre>
+          </div><!-- output_all_clients-source -->
+          
+        </div>
+
+        
+
+        
+      </div><!-- output_all_clients-method -->
+
+    
+      <div id="method-i-output_all_keys" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">output_all_keys</span><span
+            class="method-args">()</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          
+          
+          
+
+          
+          <div class="method-source-code" id="output_all_keys-source">
+            <pre><span class="ruby-comment"># File classes.rb, line 240</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">output_all_keys</span>
+  <span class="ruby-identifier">pubkey_array</span> = []
+  <span class="ruby-identifier">found_keys</span> = <span class="ruby-ivar">@keys_ds</span>.<span class="ruby-identifier">where</span>(<span class="ruby-value">:revoked=</span><span class="ruby-operator">&gt;</span><span class="ruby-keyword">false</span>).<span class="ruby-identifier">where</span>(<span class="ruby-value">:private_key=</span><span class="ruby-operator">&gt;</span><span class="ruby-keyword">nil</span>).<span class="ruby-identifier">to_a</span>
+  <span class="ruby-identifier">found_keys</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">element</span><span class="ruby-operator">|</span>
+    <span class="ruby-identifier">pubkey_array</span> <span class="ruby-operator">&lt;&lt;</span> [<span class="ruby-constant">Base64</span>.<span class="ruby-identifier">decode64</span>(<span class="ruby-identifier">element</span>[<span class="ruby-value">:public_key</span>]), <span class="ruby-identifier">element</span>[<span class="ruby-value">:id</span>]]
+  <span class="ruby-keyword">end</span>
+  <span class="ruby-identifier">pubkey_array</span>
+<span class="ruby-keyword">end</span></pre>
+          </div><!-- output_all_keys-source -->
+          
+        </div>
+
+        
+
+        
+      </div><!-- output_all_keys-method -->
+
+    
+      <div id="method-i-output_all_message_ids_by_key_id" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">output_all_message_ids_by_key_id</span><span
+            class="method-args">(key_id)</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          
+          
+          
+
+          
+          <div class="method-source-code" id="output_all_message_ids_by_key_id-source">
+            <pre><span class="ruby-comment"># File classes.rb, line 183</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">output_all_message_ids_by_key_id</span>(<span class="ruby-identifier">key_id</span>)
+  <span class="ruby-comment"># outputs all key-ids available for the given key_id</span>
+  <span class="ruby-comment"># lets the client decide which messages he wants to download and saves time and resources</span>
+  <span class="ruby-comment"># todo: implement ranges (&quot;the last 1000 messages that are for me etc&quot;)</span>
+  <span class="ruby-identifier">message_id_output_array</span> = []
+  <span class="ruby-ivar">@messages_ds</span>.<span class="ruby-identifier">where</span>(<span class="ruby-value">:key_id</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">key_id</span>).<span class="ruby-identifier">to_a</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">element</span><span class="ruby-operator">|</span>
+    <span class="ruby-identifier">message_id_output_array</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">element</span>[<span class="ruby-value">:id</span>]
+  <span class="ruby-keyword">end</span>
+  <span class="ruby-identifier">message_id_output_array</span>
+<span class="ruby-keyword">end</span></pre>
+          </div><!-- output_all_message_ids_by_key_id-source -->
+          
+        </div>
+
+        
+
+        
+      </div><!-- output_all_message_ids_by_key_id-method -->
+
+    
+      <div id="method-i-output_host_keypair" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">output_host_keypair</span><span
+            class="method-args">()</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          
+          
+          
+
+          
+          <div class="method-source-code" id="output_host_keypair-source">
+            <pre><span class="ruby-comment"># File classes.rb, line 222</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">output_host_keypair</span>
+  <span class="ruby-identifier">found_keypairs</span> = <span class="ruby-ivar">@keys_ds</span>.<span class="ruby-identifier">exclude</span>(<span class="ruby-value">:private_key=</span><span class="ruby-operator">&gt;</span><span class="ruby-keyword">nil</span>).<span class="ruby-identifier">exclude</span>(<span class="ruby-value">:revoked=</span><span class="ruby-operator">&gt;</span><span class="ruby-keyword">true</span>).<span class="ruby-identifier">to_a</span>
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">found_keypairs</span>.<span class="ruby-identifier">length</span> <span class="ruby-operator">&lt;</span> <span class="ruby-value">1</span>
+    <span class="ruby-comment"># no keypair found. have to generate one</span>
+    <span class="ruby-comment"># todo: generate keypair</span>
+    <span class="ruby-comment"># crypto = CryptoBox.new  # todo: put host key generation somewhere else where it makes sense and is executed not just by accident</span>
+    [<span class="ruby-keyword">nil</span>, <span class="ruby-keyword">nil</span>]
+  <span class="ruby-keyword">elsif</span> <span class="ruby-identifier">found_keypairs</span>.<span class="ruby-identifier">length</span> <span class="ruby-operator">==</span> <span class="ruby-value">1</span>
+    <span class="ruby-comment"># exactly one keypair found. returning it</span>
+    [<span class="ruby-constant">Base64</span>.<span class="ruby-identifier">decode64</span>(<span class="ruby-identifier">found_keypairs</span>[<span class="ruby-value">0</span>][<span class="ruby-value">:public_key</span>]), <span class="ruby-constant">Base64</span>.<span class="ruby-identifier">decode64</span>(<span class="ruby-identifier">found_keypairs</span>[<span class="ruby-value">0</span>][<span class="ruby-value">:private_key</span>])]
+  <span class="ruby-keyword">elsif</span> <span class="ruby-identifier">found_keypairs</span>.<span class="ruby-identifier">length</span> <span class="ruby-operator">&gt;</span> <span class="ruby-value">1</span>
+    <span class="ruby-comment"># there&#39;s more than one valid hostkey in the database. something went terribly wrong</span>
+    <span class="ruby-comment"># todo: think about handling it; maybe delete every host key present</span>
+    <span class="ruby-comment"># todo: implement helpful logging</span>
+    <span class="ruby-identifier">puts</span> <span class="ruby-string">&#39;there is more then one valid host key present, database corrupt. data breach?&#39;</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+          </div><!-- output_host_keypair-source -->
+          
+        </div>
+
+        
+
+        
+      </div><!-- output_host_keypair-method -->
+
+    
+      <div id="method-i-output_message_by_days" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">output_message_by_days</span><span
+            class="method-args">(key_id, days)</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          
+          
+          
+
+          
+          <div class="method-source-code" id="output_message_by_days-source">
+            <pre><span class="ruby-comment"># File classes.rb, line 205</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">output_message_by_days</span>(<span class="ruby-identifier">key_id</span>, <span class="ruby-identifier">days</span>)
+  <span class="ruby-comment"># queries the database for a certain range of days since today</span>
+<span class="ruby-keyword">end</span></pre>
+          </div><!-- output_message_by_days-source -->
+          
+        </div>
+
+        
+
+        
+      </div><!-- output_message_by_days-method -->
+
+    
+      <div id="method-i-output_new_message_ids" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">output_new_message_ids</span><span
+            class="method-args">(key_id, message_id)</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          
+          
+          
+
+          
+          <div class="method-source-code" id="output_new_message_ids-source">
+            <pre><span class="ruby-comment"># File classes.rb, line 194</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">output_new_message_ids</span>(<span class="ruby-identifier">key_id</span>, <span class="ruby-identifier">message_id</span>)
+  <span class="ruby-comment"># outputs an array of every message id bigger than the given message_id</span>
+  <span class="ruby-identifier">message_id_output_array</span> = []
+  <span class="ruby-ivar">@messages_ds</span>.<span class="ruby-identifier">where</span>(<span class="ruby-value">:key_id</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">key_id</span>).<span class="ruby-identifier">to_a</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">element</span><span class="ruby-operator">|</span>
+    <span class="ruby-keyword">if</span> (<span class="ruby-identifier">element</span>[<span class="ruby-value">:id</span>] <span class="ruby-operator">&gt;</span> <span class="ruby-identifier">message_id</span>)  <span class="ruby-comment"># todo: substitute with direct sequel query</span>
+      <span class="ruby-identifier">message_id_output_array</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">element</span>[<span class="ruby-value">:id</span>]
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">end</span>
+  <span class="ruby-identifier">message_id_output_array</span>
+<span class="ruby-keyword">end</span></pre>
+          </div><!-- output_new_message_ids-source -->
+          
+        </div>
+
+        
+
+        
+      </div><!-- output_new_message_ids-method -->
+
+    
+      <div id="method-i-read_messages_by_id" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">read_messages_by_id</span><span
+            class="method-args">(message_id, key_id)</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>searches for the message with id = message_id and key_id = key_id</p>
+          
+          
+
+          
+          <div class="method-source-code" id="read_messages_by_id-source">
+            <pre><span class="ruby-comment"># File classes.rb, line 179</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">read_messages_by_id</span>(<span class="ruby-identifier">message_id</span>, <span class="ruby-identifier">key_id</span>)
+  <span class="ruby-ivar">@messages_ds</span>.<span class="ruby-identifier">where</span>(<span class="ruby-value">:id</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">message_id</span>)<span class="ruby-comment">#.where(:key_id =&gt; key_id)  # outputs an array of messages</span>
+<span class="ruby-keyword">end</span></pre>
+          </div><!-- read_messages_by_id-source -->
+          
+        </div>
+
+        
+
+        
+      </div><!-- read_messages_by_id-method -->
+
+    
+      <div id="method-i-register_key" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">register_key</span><span
+            class="method-args">(description, host, private_key, public_key)</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          
+          
+          
+
+          
+          <div class="method-source-code" id="register_key-source">
+            <pre><span class="ruby-comment"># File classes.rb, line 209</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">register_key</span> (<span class="ruby-identifier">description</span>, <span class="ruby-identifier">host</span>, <span class="ruby-identifier">private_key</span>, <span class="ruby-identifier">public_key</span>)
+  <span class="ruby-ivar">@keys_ds</span>.<span class="ruby-identifier">insert</span>(<span class="ruby-value">:description</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">description</span>, <span class="ruby-value">:host</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">host</span>, <span class="ruby-value">:private_key</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">private_key</span>, <span class="ruby-value">:public_key</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">public_key</span>, <span class="ruby-value">:revoked</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-keyword">false</span>)
+<span class="ruby-keyword">end</span></pre>
+          </div><!-- register_key-source -->
+          
+        </div>
+
+        
+
+        
+      </div><!-- register_key-method -->
+
+    
+      <div id="method-i-register_new_client" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">register_new_client</span><span
+            class="method-args">(description, host, type, nick, realname, channel)</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          
+          
+          
+
+          
+          <div class="method-source-code" id="register_new_client-source">
+            <pre><span class="ruby-comment"># File classes.rb, line 167</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">register_new_client</span>(<span class="ruby-identifier">description</span>, <span class="ruby-identifier">host</span>, <span class="ruby-identifier">type</span>, <span class="ruby-identifier">nick</span>, <span class="ruby-identifier">realname</span>, <span class="ruby-identifier">channel</span>)
+  <span class="ruby-keyword">if</span> <span class="ruby-ivar">@clients_ds</span>.<span class="ruby-identifier">where</span>(<span class="ruby-value">:host=</span><span class="ruby-operator">&gt;</span><span class="ruby-identifier">host</span>).<span class="ruby-identifier">where</span>(<span class="ruby-value">:channel=</span><span class="ruby-operator">&gt;</span><span class="ruby-identifier">channel</span>).<span class="ruby-identifier">to_a</span>.<span class="ruby-identifier">length</span>.<span class="ruby-identifier">eql?</span> <span class="ruby-value">0</span>  <span class="ruby-comment"># do not load configuration if a config with same channel and same server already exists</span>
+    <span class="ruby-ivar">@clients_ds</span>.<span class="ruby-identifier">insert</span>(<span class="ruby-value">:description=</span><span class="ruby-operator">&gt;</span><span class="ruby-identifier">description</span>, <span class="ruby-value">:host=</span><span class="ruby-operator">&gt;</span><span class="ruby-identifier">host</span>, <span class="ruby-value">:type=</span><span class="ruby-operator">&gt;</span><span class="ruby-identifier">type</span>, <span class="ruby-value">:nick=</span><span class="ruby-operator">&gt;</span><span class="ruby-identifier">nick</span>, <span class="ruby-value">:realname=</span><span class="ruby-operator">&gt;</span><span class="ruby-identifier">realname</span>, <span class="ruby-value">:channel=</span><span class="ruby-operator">&gt;</span><span class="ruby-identifier">channel</span>)
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+          </div><!-- register_new_client-source -->
+          
+        </div>
+
+        
+
+        
+      </div><!-- register_new_client-method -->
+
+    
+      <div id="method-i-revoke_key" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">revoke_key</span><span
+            class="method-args">(public_key, key_id)</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          
+          
+          
+
+          
+          <div class="method-source-code" id="revoke_key-source">
+            <pre><span class="ruby-comment"># File classes.rb, line 213</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">revoke_key</span>(<span class="ruby-identifier">public_key</span>, <span class="ruby-identifier">key_id</span>)
+  <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">public_key</span>.<span class="ruby-identifier">nil?</span>
+    <span class="ruby-ivar">@keys_ds</span>.<span class="ruby-identifier">where</span>(<span class="ruby-value">:public_key=</span><span class="ruby-operator">&gt;</span><span class="ruby-constant">Base64</span>.<span class="ruby-identifier">encode64</span>(<span class="ruby-identifier">public_key</span>)).<span class="ruby-identifier">update</span>(<span class="ruby-value">:revoked=</span><span class="ruby-operator">&gt;</span><span class="ruby-keyword">true</span>)
+  <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">key_id</span>.<span class="ruby-identifier">nil?</span>
+    <span class="ruby-ivar">@keys_ds</span>.<span class="ruby-identifier">where</span>(<span class="ruby-value">:id</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">key_id</span>).<span class="ruby-identifier">update</span>(<span class="ruby-value">:revoked=</span><span class="ruby-operator">&gt;</span><span class="ruby-keyword">true</span>)
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+          </div><!-- revoke_key-source -->
+          
+        </div>
+
+        
+
+        
+      </div><!-- revoke_key-method -->
+
+    
+      <div id="method-i-write_message_to_database" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">write_message_to_database</span><span
+            class="method-args">(timestamp, client, private, sender, message, attachment, key_id)</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>write the message from the client application to the database</p>
+          
+          
+
+          
+          <div class="method-source-code" id="write_message_to_database-source">
+            <pre><span class="ruby-comment"># File classes.rb, line 174</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">write_message_to_database</span>(<span class="ruby-identifier">timestamp</span>, <span class="ruby-identifier">client</span>, <span class="ruby-identifier">private</span>, <span class="ruby-identifier">sender</span>, <span class="ruby-identifier">message</span>, <span class="ruby-identifier">attachment</span>, <span class="ruby-identifier">key_id</span>)
+  <span class="ruby-ivar">@messages_ds</span>.<span class="ruby-identifier">insert</span>(<span class="ruby-value">:time</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">timestamp</span>, <span class="ruby-value">:client</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">client</span>, <span class="ruby-value">:private</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">private</span>, <span class="ruby-value">:sender</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">sender</span>, <span class="ruby-value">:message</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">message</span>, <span class="ruby-value">:attachment</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">attachment</span>, <span class="ruby-value">:key_id</span> =<span class="ruby-operator">&gt;</span><span class="ruby-identifier">key_id</span>)
+<span class="ruby-keyword">end</span></pre>
+          </div><!-- write_message_to_database-source -->
+          
+        </div>
+
+        
+
+        
+      </div><!-- write_message_to_database-method -->
+
+    
+    </section><!-- public-instance-method-details -->
+  
+  </section><!-- 5Buntitled-5D -->
+
+</div><!-- documentation -->
+
+
+<footer id="validator-badges">
+  <p><a href="http://validator.w3.org/check/referer">[Validate]</a>
+  <p>Generated by <a href="https://github.com/rdoc/rdoc">RDoc</a> 4.0.0.
+  <p>Generated with the <a href="http://deveiate.org/projects/Darkfish-Rdoc/">Darkfish Rdoc Generator</a> 3.
+</footer>
+
