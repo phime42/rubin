@@ -374,28 +374,28 @@ db = DatabaseBox.new
 # require 'rack/ssl'
 # use Rack::SSL
 
-get '/messages/since/:time' do
+get '/:user/time/since/:time' do
   time = params[:time]
   "#{Time.parse(time)}"
 end
 
-get '/messages/since/:id' do
+get '/:user/since/:id' do
   content_type :json
-
+  db.output_new_message_ids(params[:user], params[:id].to_i).to_json
 end
 
-get '/user=:user/messages' do
+get '/:user/all' do
   content_type :json
   db.output_all_message_ids_by_key_id(params[:user]).to_json
 end
 
-get '/user?id=:user/message?id=:message' do  # some day this should be protected with an auth key, but not necessary
+get '/:user/:message' do  # some day this should be protected with an auth key, but not necessary
   content_type :json
   db.output_messages_by_id(params[:message], params[:user]).to_json
 end
 
 get '/key' do
-  "#{db.output_host_public_key}"
+  "#{Base64.encode64(db.output_host_public_key)}"
 end
 
 # db = DatabaseBox.new
