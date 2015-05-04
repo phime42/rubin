@@ -22,8 +22,15 @@ class ServerInteractor
     time = raw_message['time']
     source = raw_message['client']
     private = raw_message['private']
-    sender = CryptoBox.new.decrypt_string(raw_message['sender'].b, storage.private_key, storage.get_server_public_key($server_url).b)
-    message = CryptoBox.new.decrypt_string(raw_message['message'], storage.private_key, storage.get_server_public_key($server_url))
+    sender_decode = Base64.decode64(raw_message['sender']).b
+    puts raw_message['sender']
+    puts sender_decode
+    message_decode = Base64.decode64(raw_message['message'].split('\n')[0]).b
+    attachment_decode = Base64.decode64(raw_message['attachment'].split('\n')[0]).b
+    private_key = storage.private_key
+    server_pubkey = storage.get_server_public_key($server_url)
+    sender = CryptoBox.new.decrypt_string(sender_decode, private_key, server_pubkey)
+    message = CryptoBox.new.decrypt_string(message_decode, storage.private_key, storage.get_server_public_key($server_url))
     attachment = CryptoBox.new.decrypt_string(raw_message['attachment'], storage.private_key, storage.get_server_public_key($server_url))
 
     storage.save_message(server_id, time, $server_url, source, $server_url, private, sender, message, attachment)
@@ -140,4 +147,4 @@ puts ServerInteractor.new.read_message(3, 10)
 # puts CryptoBox.new.generate_keypair[1].class
 
 
- # puts ApplicationStorage.new.get_server_public_key($server_url)
+ # puts ApplicationStorage.new.get_server_public_key($server_url).encoding
