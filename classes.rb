@@ -2,7 +2,6 @@ require 'rubygems'
 require 'bundler/setup'
 require 'time'
 require 'sequel'
-require 'sinatra'
 require 'json'
 require 'rbnacl/libsodium'
 require 'sqlite3'
@@ -15,8 +14,6 @@ require 'thread'
 
 
 $dbpath = "sqlite://test.db"
-
-
 
 
 ##
@@ -150,8 +147,8 @@ class DatabaseBox  # OPTIMIZE: rewrite this class to be more ordered and suitabl
   end
 
   # searches for the message with id = message_id and key_id = key_id
-  def output_messages_by_id(message_id, key_id)
-    message = @messages_ds.where(:id => message_id).to_a[0]  # outputs an array of messages
+  def output_message_by_id(message_id, key_id)
+    message = @messages_ds.where(:id => message_id).to_a[0]  # outputs a message
     database_key_id = message[:key_id]
     if database_key_id.eql?(key_id.to_i)
       message
@@ -364,39 +361,17 @@ class CryptoBox
   def encrypt_string(string_to_encrypt, sender_private_key, receiver_public_key)
     RbNaCl::SimpleBox.from_keypair(receiver_public_key, sender_private_key).encrypt(string_to_encrypt)
   end
+
+  # Decrypts a given string with the given receiver private key and
+  # checks the signature of the message with a given public key
+
+  def decrypt_string(string_to_decrypt, receiver_private_key, sender_public_key)
+    RbNaCl::SimpleBox.from_keypair(sender_public_key, receiver_private_key).decrypt(string_to_decrypt)
+  end
+
 end
 
-Thread.new do
-  Starter.new
-end
 
-db = DatabaseBox.new
-# require 'rack/ssl'
-# use Rack::SSL
-
-get '/:user/time/since/:time' do
-  time = params[:time]
-  "#{Time.parse(time)}"
-end
-
-get '/:user/since/:id' do
-  content_type :json
-  db.output_new_message_ids(params[:user], params[:id].to_i).to_json
-end
-
-get '/:user/all' do
-  content_type :json
-  db.output_all_message_ids_by_key_id(params[:user]).to_json
-end
-
-get '/:user/:message' do  # some day this should be protected with an auth key, but not necessary
-  content_type :json
-  db.output_messages_by_id(params[:message], params[:user]).to_json
-end
-
-get '/key' do
-  "#{Base64.encode64(db.output_host_public_key)}"
-end
 
 # db = DatabaseBox.new
 # puts db.output_messages_by_id(10,3)
