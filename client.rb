@@ -4,6 +4,37 @@ require 'json'
 
 $server_url = 'http://localhost:4567'
 $message_storage = "sqlite://client.db"
+$key_id = 6  # hardcoded atm, will be changed
+
+class Main
+  def initialize
+
+    storage = ApplicationStorage.new
+    services_to_start = []
+
+    services_to_start << Thread.new{
+      auto_refresh
+    }
+
+    services_to_start << Thread.new{
+      while true
+        storage.show_messages
+        sleep(5)
+      end
+    }
+
+    services_to_start.each{ |t| t.join }
+  end
+
+  def auto_refresh
+    server = ServerInteractor.new
+    while true
+      server.save_new_messages
+      sleep(5)
+    end
+  end
+
+end
 
 class ServerInteractor
   def initialize
@@ -31,16 +62,27 @@ class ServerInteractor
     box = RbNaCl::SimpleBox.from_keypair(server_pubkey.b, private_key.b)
 
     box.decrypt(decoded_sender)
-    # deciphered_sender = CryptoBox.new.decrypt_string(Base64.decode64(sender), private_key, server_pubkey)
-
-    # server_pubkey = storage.get_server_public_key($server_url)
-    # sender = CryptoBox.new.decrypt_string(sender_decode, private_key, server_pubkey)
-    # message = CryptoBox.new.decrypt_string(message_decode, storage.private_key, storage.get_server_public_key($server_url))
-    # attachment = CryptoBox.new.decrypt_string(raw_message['attachment'], storage.private_key, storage.get_server_public_key($server_url))
     if ApplicationStorage.new.check_for_message(server_id)
       storage.save_message(server_id, time, $server_url, source, $server_url, private, box.decrypt(Base64.decode64(sender)), box.decrypt(Base64.decode64(message)), box.decrypt(Base64.decode64(attachment)))
     end
 
+  end
+
+  def save_new_messages
+    new_messages.each do |message|
+      read_message($key_id, message)
+    end
+  end
+
+  def new_messages
+    saved_messages = ApplicationStorage.new.saved_messages
+    available_messages = list_of_messages($key_id)
+    available_messages-saved_messages
+  end
+
+
+  def list_of_messages(key_id)
+    JSON.parse(RestClient.get "#{$server_url + '/' + key_id.to_s + '/all'}")
   end
 
   def save_message(key_id, message_id)
@@ -107,12 +149,25 @@ class ApplicationStorage
     @messages.insert(:server_id => server_id, :time => time, :server => server, :source => source, :description => description, :private => private, :sender => sender, :message => message, :attachment => attachment)
   end
 
+  def show_messages
+    @messages.to_a.each do |message|
+      puts message[:time].to_s + ' ' + message[:sender] + ' @ <' + message[:source].to_s + '>: ' + message[:message]
+    end
+  end
   def get_server_public_key(host_url)
     key = @keys.where(:host=>host_url).exclude(:revoked=>true).to_a
     if key.length == 0
       save_server_public_key(host_url, host_url)
     end
    Base64.decode64(key[0][:public_key].split('\n')[0]).b
+  end
+
+  def saved_messages
+    results = []
+    @messages.to_a.each do |entry|
+      results << entry[:server_id]
+    end
+    return results
   end
 
   def read_server_public_key(host_url)
@@ -156,7 +211,9 @@ end
 # connection = ServerInteractor.new
 # puts connection.read_message(3, 10)
 
-ServerInteractor.new.read_message(6, 87) #!!!
+# ServerInteractor.new.read_message(6, 87) #!!!
+# puts ServerInteractor.new.save_new_messages
+
 
 # puts CryptoBox.new.generate_keypair[1].class
 
@@ -168,3 +225,7 @@ ServerInteractor.new.read_message(6, 87) #!!!
 # puts Base64.encode64(ApplicationStorage.new.get_local_private_key)
 
 # puts ApplicationStorage.new.check_for_message(82)
+
+# puts ServerInteractor.new.list_of_messages(3).sort
+
+Main.new
