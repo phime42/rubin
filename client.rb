@@ -5,8 +5,6 @@ require 'json'
 $server_url = 'http://localhost:4567'
 $message_storage = "sqlite://client.db"
 
-$private_key_file = ENV['HOME']+'/.rubin/private_key'
-$public_key_file  = ENV['HOME']+'/.rubin/public_key'
 class ServerInteractor
   def initialize
   end
@@ -22,18 +20,27 @@ class ServerInteractor
     time = raw_message['time']
     source = raw_message['client']
     private = raw_message['private']
-    sender_decode = Base64.decode64(raw_message['sender']).b
-    puts raw_message['sender']
-    puts sender_decode
-    message_decode = Base64.decode64(raw_message['message'].split('\n')[0]).b
-    attachment_decode = Base64.decode64(raw_message['attachment'].split('\n')[0]).b
+    sender = raw_message['sender']
+    message = raw_message['message']
+    attachment = raw_message['attachment']
+
     private_key = storage.private_key
     server_pubkey = storage.get_server_public_key($server_url)
-    sender = CryptoBox.new.decrypt_string(sender_decode, private_key, server_pubkey)
-    message = CryptoBox.new.decrypt_string(message_decode, storage.private_key, storage.get_server_public_key($server_url))
-    attachment = CryptoBox.new.decrypt_string(raw_message['attachment'], storage.private_key, storage.get_server_public_key($server_url))
+    decoded_sender = Base64.decode64(sender)
 
-    storage.save_message(server_id, time, $server_url, source, $server_url, private, sender, message, attachment)
+    box = RbNaCl::SimpleBox.from_keypair(server_pubkey.b, private_key.b)
+
+    box.decrypt(decoded_sender)
+    # deciphered_sender = CryptoBox.new.decrypt_string(Base64.decode64(sender), private_key, server_pubkey)
+
+    # server_pubkey = storage.get_server_public_key($server_url)
+    # sender = CryptoBox.new.decrypt_string(sender_decode, private_key, server_pubkey)
+    # message = CryptoBox.new.decrypt_string(message_decode, storage.private_key, storage.get_server_public_key($server_url))
+    # attachment = CryptoBox.new.decrypt_string(raw_message['attachment'], storage.private_key, storage.get_server_public_key($server_url))
+    if ApplicationStorage.new.check_for_message(server_id)
+      storage.save_message(server_id, time, $server_url, source, $server_url, private, box.decrypt(Base64.decode64(sender)), box.decrypt(Base64.decode64(message)), box.decrypt(Base64.decode64(attachment)))
+    end
+
   end
 
   def save_message(key_id, message_id)
@@ -92,6 +99,9 @@ class ApplicationStorage
 
   end
 
+  def check_for_message(server_id)
+    @messages.where(:server_id => server_id).to_a.length == 0
+  end
 
   def save_message(server_id, time, server, source,  description, private, sender, message, attachment)
     @messages.insert(:server_id => server_id, :time => time, :server => server, :source => source, :description => description, :private => private, :sender => sender, :message => message, :attachment => attachment)
@@ -126,7 +136,11 @@ class ApplicationStorage
   end
 
   def get_local_keypair
-    found_keys = @keys.exclude(:private_key => nil).exclude(:revoked => true).to_a[0]  # does only honor the first non-revoked keypair in database
+    @keys.exclude(:private_key => nil).exclude(:revoked => true).to_a[0]  # does only honor the first non-revoked keypair in database
+  end
+
+  def get_local_private_key
+    get_local_keypair[:public_key]
   end
 
   def private_key
@@ -142,9 +156,15 @@ end
 # connection = ServerInteractor.new
 # puts connection.read_message(3, 10)
 
-puts ServerInteractor.new.read_message(3, 10)
+ServerInteractor.new.read_message(6, 87) #!!!
 
 # puts CryptoBox.new.generate_keypair[1].class
 
 
  # puts ApplicationStorage.new.get_server_public_key($server_url).encoding
+
+# puts ApplicationStorage.new.get_server_public_key($server_url)
+
+# puts Base64.encode64(ApplicationStorage.new.get_local_private_key)
+
+# puts ApplicationStorage.new.check_for_message(82)
